@@ -1,0 +1,28 @@
+[Unit]
+Description=zelador-carro envio: manda o que foi gravado ao computador de casa
+RequiresMountsFor=/var/opt
+After=local-fs.target
+StartLimitIntervalSec=600
+StartLimitBurst=10
+
+[Service]
+# Começa root só para preparar as pastas e larga o root (uid 59473, o que o
+# component.json registra para a internet) antes de abrir qualquer conexão.
+ExecStart=/var/opt/mgu-python/current/bin/python3 -I /var/opt/zelador-carro/current/zelador.py envio
+Restart=always
+RestartSec=30
+TimeoutStopSec=10
+NoNewPrivileges=yes
+CapabilityBoundingSet=CAP_CHOWN CAP_FOWNER CAP_DAC_OVERRIDE CAP_SETUID CAP_SETGID
+Nice=19
+IOSchedulingClass=idle
+CPUShares=64
+CPUQuota=10%
+MemoryLimit=96M
+TasksMax=16
+LimitCORE=1
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

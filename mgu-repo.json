@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "components": [
+    { "id": "zelador-carro", "kind": "tool", "path": "ferramenta" }
+  ]
+}

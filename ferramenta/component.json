@@ -1,0 +1,31 @@
+{
+  "id": "zelador-carro",
+  "kind": "tool",
+  "version": "0.1.0",
+  "license": "MIT",
+  "title": "Zelador do carro (depuração)",
+  "description": "Ferramenta de depuração: grava, só lendo, a orientação da navegação BMW e o log do Mapas no painel, e manda ao computador de casa quando o carro está no Wi-Fi de casa. Remova quando não precisar mais.",
+  "requires": { "mgu-deploy": "0.7.17", "mgu-python": "1.0.0", "mgu-uplink": "0.4.0" },
+  "uninstallable": true,
+  "mguHmi": ["ID7"],
+  "internet": true,
+  "uids": [59473],
+  "files": [
+    { "path": "zelador-escuta", "from": "zelador-escuta", "mode": "0755" },
+    { "path": "zelador.py", "from": "zelador.py", "mode": "0644" },
+    { "path": "zelador.conf", "from": "zelador.conf", "mode": "0644" },
+    { "path": "receptor.pem", "from": "receptor.pem", "mode": "0644" }
+  ],
+  "units": [
+    { "name": "zelador-carro-escuta.service", "from": "systemd/zelador-carro-escuta.service" },
+    { "name": "zelador-carro-envio.service", "from": "systemd/zelador-carro-envio.service" },
+    { "name": "zelador-carro-coleta.service", "from": "systemd/zelador-carro-coleta.service" },
+    { "name": "zelador-carro-coleta.timer", "from": "systemd/zelador-carro-coleta.timer" }
+  ],
+  "enable": [
+    { "unit": "zelador-carro-escuta.service", "target": "multi-user.target" },
+    { "unit": "zelador-carro-envio.service", "target": "multi-user.target" },
+    { "unit": "zelador-carro-coleta.timer", "target": "timers.target" }
+  ],
+  "restart": ["zelador-carro-escuta.service", "zelador-carro-envio.service"]
+}

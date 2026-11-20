@@ -1,0 +1,17 @@
+[Unit]
+Description=zelador-carro coleta: o que entrou no log do Mapas no painel e um resumo da central
+RequiresMountsFor=/var/opt
+
+[Service]
+# root, só lendo o sistema; escreve só em /var/opt/zelador-carro. Sem rede.
+Type=oneshot
+ExecStart=/var/opt/mgu-python/current/bin/python3 -I /var/opt/zelador-carro/current/zelador.py coleta
+TimeoutStartSec=60
+NoNewPrivileges=yes
+Nice=19
+IOSchedulingClass=idle
+CPUQuota=10%
+MemoryLimit=64M
+LimitCORE=1
+StandardOutput=journal
+StandardError=journal

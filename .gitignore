@@ -1,0 +1,4 @@
+fonte/build/
+*.key
+__pycache__/
+.DS_Store
