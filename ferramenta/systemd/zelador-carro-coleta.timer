@@ -1,10 +1,10 @@
 [Unit]
-Description=zelador-carro coleta: 3 min depois de ligar e a cada 5 min
+Description=zelador-carro coleta: 1 min depois de ligar e a cada minuto
 
 [Timer]
-OnBootSec=3min
-OnUnitActiveSec=5min
-AccuracySec=30s
+OnBootSec=1min
+OnUnitActiveSec=1min
+AccuracySec=5s
 
 [Install]
 WantedBy=timers.target

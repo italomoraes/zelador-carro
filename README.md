@@ -15,9 +15,9 @@ receptor estão em `ferramenta/`. Para outro par, instale o receptor
 
 | Serviço | Como roda | O que faz |
 |---|---|---|
-| `zelador-carro-escuta` | root, sem rede | Assina (só lê) os atributos da orientação da navegação BMW (SOME/IP `0xFB1A`, `0xFB1B`, `0xFB1C` e `0xFB35`, instância `0x0080`) e grava cada mensagem nova em `/var/opt/zelador-carro/dados/escuta`, até 100 MB. Não chama métodos nem oferece serviços. |
-| `zelador-carro-coleta` (timer, a cada 5 min) | root, sem rede | Copia o que entrou no log do Mapas no painel e um resumo da central (versões, serviços, espaço, internet) para `dados/coleta`. |
-| `zelador-carro-envio` | uid 59473 (larga o root ao começar) | Manda os arquivos prontos ao receptor por HTTPS, conferindo o certificado dele, e apaga cada um só depois da confirmação. Longe de casa, espera. |
+| `zelador-carro-escuta` | root, sem rede | Assina (só lê) os atributos da orientação da navegação BMW (SOME/IP `0xFB1A`, `0xFB1B`, `0xFB1C` e `0xFB35`, instância `0x0080`) e grava cada mensagem nova em `/var/opt/zelador-carro/dados/escuta`, um arquivo por minuto, até 100 MB. Só assina 5 s depois que a navegação oferece o serviço, sem dizer o tipo dos eventos. Não chama métodos nem oferece serviços. |
+| `zelador-carro-coleta` (timer, a cada minuto) | root, sem rede | Copia o que entrou nos logs do Mapas no painel e do cluster-render e um resumo da central (versões, serviços, espaço, internet) para `dados/coleta`. |
+| `zelador-carro-envio` | uid 59473 (larga o root ao começar) | A cada 15 s, manda os arquivos prontos ao receptor por HTTPS, conferindo o certificado dele, e apaga cada um só depois da confirmação. Longe de casa, espera. |
 
 ## Segurança
 

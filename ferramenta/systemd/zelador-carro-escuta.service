@@ -9,7 +9,7 @@ StartLimitBurst=10
 # root: a política do SOME/IP da central só libera esses serviços para o root.
 # Sem rede: a internet da central (mgu-uplink) recusa o root.
 Environment=VSOMEIP_CONFIGURATION=/etc/vsomeip
-ExecStart=/var/opt/zelador-carro/current/zelador-escuta --pasta /var/opt/zelador-carro/dados/escuta --dono 59473 --limite-mb 100 --gira-kb 1024 --gira-min 10
+ExecStart=/var/opt/zelador-carro/current/zelador-escuta --pasta /var/opt/zelador-carro/dados/escuta --dono 59473 --limite-mb 100 --gira-kb 1024 --gira-min 1
 Restart=always
 RestartSec=30
 TimeoutStopSec=10

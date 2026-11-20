@@ -1,10 +1,10 @@
 {
   "id": "zelador-carro",
   "kind": "tool",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "title": "Zelador do carro (depuração)",
-  "description": "Ferramenta de depuração: grava, só lendo, a orientação da navegação BMW e o log do Mapas no painel, e manda ao computador de casa quando o carro está no Wi-Fi de casa. Remova quando não precisar mais.",
+  "description": "Ferramenta de depuração: grava, só lendo, a orientação da navegação BMW e os logs do Mapas no painel, e manda ao computador de casa quando o carro está no Wi-Fi de casa. Remova quando não precisar mais.",
   "requires": { "mgu-deploy": "0.7.17", "mgu-python": "1.0.0", "mgu-uplink": "0.4.0" },
   "uninstallable": true,
   "mguHmi": ["ID7"],
