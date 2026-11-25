@@ -62,6 +62,187 @@ def ler(caminho):
         return f.read()
 
 
+def gira(caminho, geracoes):
+    """Como o diário do waze-on-cluster: .N-1 -> .N, ..., .1 -> .2, atual -> .1."""
+    for i in range(geracoes - 1, 0, -1):
+        if os.path.exists('%s.%d' % (caminho, i)):
+            os.replace('%s.%d' % (caminho, i), '%s.%d' % (caminho, i + 1))
+    os.replace(caminho, caminho + '.1')
+
+
+def testa_girados(zelador, tmp):
+    jr = os.path.join(tmp, 'jr', 'journal.log')
+    escreve(jr + '.2', b'a\n')
+    escreve(jr + '.1', b'b\n')
+    escreve(jr, b'c\n')
+    novo, est = zelador.le_novo(jr, {})
+    ok('girados: a primeira vez lê todos, do mais antigo', novo == b'a\nb\nc\n')
+    with open(jr, 'ab') as f:
+        f.write(b'd\n')
+    novo, est = zelador.le_novo(jr, est)
+    ok('girados: depois, só o que entrou no atual', novo == b'd\n')
+    novo, est = zelador.le_novo(jr, est)
+    ok('girados: nada novo, nada lido', novo == b'')
+    with open(jr, 'ab') as f:
+        f.write(b'e\n')
+    gira(jr, 10)
+    escreve(jr, b'f\n')
+    novo, est = zelador.le_novo(jr, est)
+    ok('girou: o resto do antigo e o novo, sem repetir', novo == b'e\nf\n')
+    with open(jr, 'ab') as f:
+        f.write(b'g\n')
+    gira(jr, 10)
+    escreve(jr, b'h\n')
+    with open(jr, 'ab') as f:
+        f.write(b'i\n')
+    gira(jr, 10)
+    escreve(jr, b'j\n')
+    novo, est = zelador.le_novo(jr, est)
+    ok('girou duas vezes entre leituras: nada perdido', novo == b'g\nh\ni\nj\n')
+    for n in os.listdir(os.path.dirname(jr)):
+        os.unlink(os.path.join(os.path.dirname(jr), n))
+    escreve(jr + '.1', b'x\n')
+    escreve(jr, b'y\n')
+    novo, est = zelador.le_novo(jr, est)
+    ok('o de antes sumiu: lê todos de novo', novo == b'x\ny\n')
+    with open(jr, 'wb') as f:
+        f.write(b'z')
+    novo, est = zelador.le_novo(jr, est)
+    ok('truncado: lido do começo', novo == b'z')
+    with open(jr, 'ab') as f:
+        f.write(b'123456\n')
+    novo, est = zelador.le_novo(jr, est, limite=3)
+    novo2, est = zelador.le_novo(jr, est, limite=100)
+    ok('com limite: o resto fica para a próxima', novo == b'123' and novo2 == b'456\n')
+    sumido = os.path.join(tmp, 'jr', 'nao-existe.log')
+    ok('sem o arquivo: nada, e o estado fica', zelador.le_novo(sumido, {'ino': 7, 'pos': 3}) == (b'', {'ino': 7, 'pos': 3}))
+
+    carro = os.path.join(tmp, 'carro-girados')
+    conf = {'receptor': '127.0.0.1', 'porta': 1, 'uid': os.getuid(), 'pasta': carro, 'intervalo_s': 1,
+            'limite_mb': 10, 'coleta': {'diario': jr}}
+    p = zelador.pastas(conf)
+    os.makedirs(p['estado'])
+    with open(os.path.join(p['estado'], 'coleta.json'), 'w') as f:
+        json.dump({'render-log-anterior': {'ino': 1, 'pos': 2}, 'diario': est}, f)
+    with open(jr, 'ab') as f:
+        f.write(b'pela coleta\n')
+    zelador.coleta(conf)
+    diarios = [n for n in os.listdir(p['coleta']) if n.startswith('diario-')]
+    with open(os.path.join(p['estado'], 'coleta.json')) as f:
+        estado = json.load(f)
+    ok('coleta: o diário girado vira diario-*.txt',
+       len(diarios) == 1 and ler(os.path.join(p['coleta'], diarios[0])) == b'pela coleta\n')
+    ok('coleta: o estado de um arquivo que saiu da configuração sai também',
+       'render-log-anterior' not in estado and 'diario' in estado)
+
+
+FALSO_JOURNALCTL = r'''
+import json, sys
+entradas, args = sys.argv[1], sys.argv[2:]
+with open(entradas + '.chamadas', 'a') as f:
+    f.write(' '.join(args) + '\n')
+linhas = [l for l in open(entradas).read().splitlines() if l]
+cursor = [a.split('=', 1)[1] for a in args if a.startswith('--after-cursor=')]
+if cursor:
+    nomes = [json.loads(l)['__CURSOR'] for l in linhas]
+    if cursor[0] not in nomes:
+        sys.stderr.write('Failed to seek to cursor\n')
+        sys.exit(1)
+    linhas = linhas[nomes.index(cursor[0]) + 1:]
+for l in linhas:
+    print(l)
+'''
+
+
+def testa_uplink(zelador, tmp, conf):
+    pasta = os.path.join(tmp, 'uplink')
+    os.makedirs(pasta)
+    falso = os.path.join(pasta, 'journalctl.py')
+    with open(falso, 'w') as f:
+        f.write(FALSO_JOURNALCTL)
+    entradas = os.path.join(pasta, 'entradas.json')
+    boot = os.path.join(pasta, 'boot_id')
+    status = os.path.join(pasta, 'status.json')
+    antigos = (zelador.JOURNALCTL, zelador.BOOT_ID, zelador.STATUS_UPLINK)
+    zelador.JOURNALCTL = [sys.executable, '-I', falso, entradas]
+    zelador.BOOT_ID = boot
+    zelador.STATUS_UPLINK = status
+
+    def entrada(cursor, segundos, msg):
+        return json.dumps({'__CURSOR': cursor, '__REALTIME_TIMESTAMP': str(segundos * 1000000),
+                           'SYSLOG_IDENTIFIER': 'mgu-uplink', '_PID': '812', 'MESSAGE': msg})
+
+    def poe(*linhas):
+        with open(entradas, 'w') as f:
+            f.write('\n'.join(linhas) + '\n')
+
+    def wifi(link):
+        with open(status, 'w') as f:
+            json.dump({'state': 'searching', 'device': None, 'wifi': {
+                'enabled': True, 'link': link, 'backend': 'car-supplicant', 'paused': None, 'freq': 2437,
+                'ssid': 'RedeSecreta', 'ip': '192.168.0.9', 'saved': ['RedeSecreta'],
+                'networks': [{'ssid': 'RedeSecreta', 'signal': -50}],
+                'error': 'could not join "RedeSecreta" (wrong password, or out of range)'}}, f)
+
+    carro = os.path.join(tmp, 'carro-uplink')
+    c = dict(conf, pasta=carro, coleta={})
+    p = zelador.pastas(c)
+    vistos = set()
+
+    def novo_uplink():
+        nomes = sorted(n for n in os.listdir(p['coleta']) if n.startswith('uplink-') and n not in vistos)
+        vistos.update(nomes)
+        return b''.join(ler(os.path.join(p['coleta'], n)) for n in nomes).decode()
+
+    try:
+        escreve(boot, b'boot-1\n')
+        bytes_msg = list('wifi: found "Casa": joining'.encode())
+        poe(entrada('c1', 1, 'wifi: looking for the saved networks on wlan0 (every channel)'),
+            entrada('c2', 2, bytes_msg))
+        wifi('scanning')
+        zelador.coleta(c)
+        t = novo_uplink()
+        linhas = t.splitlines()
+        ok('uplink: as linhas do diário com a hora UTC e o processo',
+           len(linhas) == 3 and linhas[0] == '1970-01-01T00:00:01.000000Z mgu-uplink[812]: wifi: looking for '
+           'the saved networks on wlan0 (every channel)' and linhas[1].endswith('wifi: found "Casa": joining'))
+        ok('uplink: o estado do Wi-Fi numa linha', ' wifi: {' in linhas[2] and '"link": "scanning"' in linhas[2]
+           and '"backend": "car-supplicant"' in linhas[2] and '"freq": 2437' in linhas[2])
+        ok('uplink: o estado sem nome de rede nem endereço',
+           'RedeSecreta' not in linhas[2] and '192.168' not in linhas[2] and 'could not join' in linhas[2])
+
+        poe(entrada('c1', 1, 'um'), entrada('c2', 2, 'dois'), entrada('c3', 3, 'wifi: saved networks paused'))
+        zelador.coleta(c)
+        t = novo_uplink()
+        ok('uplink: depois, só o que veio depois do cursor, e o estado igual não se repete',
+           t.splitlines() == ['1970-01-01T00:00:03.000000Z mgu-uplink[812]: wifi: saved networks paused'])
+        ok('uplink: pediu pelo cursor', '--after-cursor=c2' in open(entradas + '.chamadas').read().splitlines()[-1])
+
+        poe(entrada('c2', 2, 'dois'), entrada('c9', 4, 'wifi: automatic scans on wlan0 on every channel'))
+        wifi('idle')
+        zelador.coleta(c)
+        t = novo_uplink().splitlines()
+        ok('uplink: cursor recusado: lê o boot e deixa de fora o que já foi',
+           len(t) == 2 and t[0].endswith('wifi: automatic scans on wlan0 on every channel') and '"link": "idle"' in t[1])
+
+        escreve(boot, b'boot-2\n')
+        poe(entrada('d1', 5, 'wifi: using the car\'s wpa_supplicant on wlan0'))
+        zelador.coleta(c)
+        t = novo_uplink().splitlines()
+        ultima = open(entradas + '.chamadas').read().splitlines()[-1]
+        ok('uplink: outro boot: do começo, sem cursor',
+           len(t) == 1 and t[0].endswith("using the car's wpa_supplicant on wlan0") and '--after-cursor' not in ultima)
+
+        zelador.coleta(c)
+        ok('uplink: nada novo, nenhum arquivo', novo_uplink() == '')
+        zelador.JOURNALCTL = [os.path.join(pasta, 'nao-existe')]
+        os.unlink(status)
+        zelador.coleta(c)
+        ok('uplink: sem journalctl e sem o status, a coleta segue', novo_uplink() == '')
+    finally:
+        zelador.JOURNALCTL, zelador.BOOT_ID, zelador.STATUS_UPLINK = antigos
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix='zelador-teste-')
     try:
@@ -177,6 +358,9 @@ def main():
         zelador.coleta(conf)
         logs = sorted(n for n in os.listdir(p['coleta']) if n.startswith('mapas-log-') and n.endswith('.txt'))
         ok('o log girou: lido do começo', len(logs) == 3 and ler(os.path.join(p['coleta'], logs[2])) == b'girou\n')
+
+        testa_girados(zelador, tmp)
+        testa_uplink(zelador, tmp, conf)
 
         # o envio de verdade, como processo
         atual = os.path.join(tmp, 'current')

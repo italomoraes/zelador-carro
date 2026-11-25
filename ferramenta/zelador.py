@@ -15,12 +15,21 @@ confirma o mesmo sha256. Sem receptor (o carro longe de casa), tenta de novo
 no próximo ciclo. O carro se apresenta com um id sorteado na primeira vez
 (estado/carro.id); o receptor só aceita o primeiro id que vê.
 
-Coleta: o que entrou de novo nos arquivos de `coleta` da configuração (o log
-do Mapas no painel) e um resumo da central (hora, tempo ligado, carga,
-memória, espaço, versões das ferramentas, estado dos serviços do zelador e da
-internet), cada um num .txt em dados/coleta, do dono do envio. O resumo é
-gravado quando as ferramentas, os serviços ou a internet mudam, e a cada 30
-min. Só lê o sistema; escreve só na pasta do zelador.
+Coleta, cada parte num .txt em dados/coleta, do dono do envio:
+- o que entrou de novo nos arquivos de `coleta` da configuração: os logs do
+  Mapas no painel e do cluster-render e o diário que o waze-on-cluster guarda
+  na RAM (o CarPlay, o Android Auto, o systemd e o kernel, Wi-Fi incluído).
+  Cada arquivo é seguido pelo inode quando gira (arquivo -> arquivo.1 -> ...
+  -> arquivo.9), então o que entrou antes do giro não se perde nem se repete;
+- o diário do mgu-uplink (as buscas e conexões do Wi-Fi da loja) desde a
+  última coleta, pelo cursor do journalctl. O diário do sistema na central é
+  volátil e curto (uns 4 min), por isso a coleta de cada minuto;
+- o estado do Wi-Fi da loja (status.json do mgu-uplink, sem nomes de rede),
+  quando muda;
+- um resumo da central (hora, tempo ligado, carga, memória, espaço, versões
+  das ferramentas, estado dos serviços do zelador e da internet), quando as
+  ferramentas, os serviços ou a internet mudam, e a cada 30 min.
+Só lê o sistema; escreve só na pasta do zelador.
 
 A internet da central (mgu-uplink) só deixa sair os uids registrados: o do
 envio está no component.json ("internet", "uids"); o root não sai.
@@ -30,6 +39,7 @@ import hashlib
 import http.client
 import json
 import os
+import re
 import secrets
 import signal
 import ssl
@@ -39,8 +49,17 @@ import time
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 CONF = os.path.join(AQUI, 'zelador.conf')
-LIMITE_LEITURA = 4 << 20  # por arquivo de coleta, por vez
+LIMITE_LEITURA = 4 << 20  # por arquivo de coleta (com os girados), por vez
 RESUMO_S = 30 * 60  # um resumo sem mudança nas ferramentas, serviços e internet
+GIRADOS = 9  # arquivo.1 a arquivo.9 (o diário do waze-on-cluster guarda 10 arquivos)
+JOURNALCTL = ['journalctl']
+UNIDADE_UPLINK = 'mgu-uplink.service'
+STATUS_UPLINK = '/run/mgu-uplink/status.json'
+BOOT_ID = '/proc/sys/kernel/random/boot_id'
+LIMITE_DIARIO = 5000  # linhas do diário do uplink por vez
+CAMPOS_WIFI = ('enabled', 'link', 'backend', 'paused', 'freq', 'allow5ghz', 'fiveOnly', 'scanning', 'signal',
+               'error')
+ESTADO_FIXO = ('resumo', 'resumo_quando', 'uplink', 'wifi')  # o resto do estado são os arquivos de `coleta`
 
 
 def log(msg):
@@ -264,6 +283,118 @@ def le_arquivo(caminho, limite=1 << 16):
         return ''
 
 
+def geracoes(caminho):
+    """O arquivo e os girados dele, do mais antigo ao atual: [(caminho, stat)]."""
+    achados = []
+    for c in ['%s.%d' % (caminho, i) for i in range(GIRADOS, 0, -1)] + [caminho]:
+        try:
+            achados.append((c, os.stat(c)))
+        except OSError:
+            pass
+    return achados
+
+
+def le_novo(caminho, antes, limite=LIMITE_LEITURA):
+    """O que entrou em `caminho` desde `antes` ({'ino', 'pos'}), até `limite`
+    bytes, e o novo estado. O arquivo de antes é achado pelo inode entre o
+    atual e os girados, e o que veio depois dele é lido inteiro. Sem ele (a
+    primeira vez, ou girou além do último), lê todos, do mais antigo."""
+    gens = geracoes(caminho)
+    inicio, pos = 0, 0
+    for i, (_, st) in enumerate(gens):
+        if st.st_ino == antes.get('ino'):
+            inicio, pos = i, antes.get('pos', 0)
+            if st.st_size < pos:  # truncado
+                pos = 0
+            break
+    partes, lidos, estado = [], 0, antes
+    for c, st in gens[inicio:]:
+        if lidos >= limite:
+            break
+        try:
+            with open(c, 'rb') as f:
+                if os.fstat(f.fileno()).st_ino != st.st_ino:
+                    break  # girou agora: o resto fica para a próxima vez
+                f.seek(pos)
+                pedaco = f.read(limite - lidos)
+        except OSError:
+            break
+        partes.append(pedaco)
+        lidos += len(pedaco)
+        estado = {'ino': st.st_ino, 'pos': pos + len(pedaco)}
+        pos = 0
+    return b''.join(partes), estado
+
+
+def hora_utc(us):
+    s, resto = divmod(int(us), 1000000)
+    return time.strftime('%Y-%m-%dT%H:%M:%S', time.gmtime(s)) + '.%06dZ' % resto
+
+
+def mensagem(e):
+    m = e.get('MESSAGE', '')
+    if isinstance(m, list):  # o journalctl manda como lista de bytes o que não é texto
+        try:
+            m = bytes(m).decode(errors='replace')
+        except (TypeError, ValueError):
+            m = repr(m)
+    return str(m).replace('\n', ' ')
+
+
+def diario_uplink(antes):
+    """As linhas novas do diário do mgu-uplink desde `antes` ({'boot',
+    'cursor', 'us'}) e o novo estado. Se o journalctl recusa o cursor, lê o
+    boot todo e deixa de fora o que não é mais novo que a última linha lida."""
+    boot = le_arquivo(BOOT_ID).strip()
+    mesmo_boot = antes.get('boot') == boot and antes.get('cursor')
+    base = JOURNALCTL + ['-o', 'json', '--no-pager', '-u', UNIDADE_UPLINK]
+    tentativas = [(base + ['--after-cursor=' + antes['cursor'], '-b'], 0)] if mesmo_boot else []
+    tentativas.append((base + ['-b'], antes.get('us', 0) if mesmo_boot else 0))
+    for cmd, desde in tentativas:
+        try:
+            r = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=20)
+        except (OSError, subprocess.SubprocessError):
+            return b'', antes
+        if r.returncode == 0:
+            break
+    else:
+        return b'', antes
+    linhas = []
+    estado = dict(antes, boot=boot) if mesmo_boot else {'boot': boot}
+    for bruta in r.stdout.splitlines()[-LIMITE_DIARIO:]:
+        try:
+            e = json.loads(bruta)
+            us = int(e.get('__REALTIME_TIMESTAMP', 0))
+        except (ValueError, TypeError, AttributeError):
+            continue
+        if us <= desde:
+            continue
+        quem = e.get('SYSLOG_IDENTIFIER') or e.get('_COMM') or UNIDADE_UPLINK
+        pid = e.get('_PID') or e.get('SYSLOG_PID')
+        linhas.append('%s %s%s: %s\n' % (hora_utc(us), quem, '[%s]' % pid if pid else '', mensagem(e)))
+        estado = {'boot': boot, 'cursor': e.get('__CURSOR'), 'us': us}
+    return ''.join(linhas).encode(), estado
+
+
+def estado_wifi():
+    """O estado do Wi-Fi da loja (status.json do mgu-uplink) em uma linha, sem
+    nomes de rede nem endereços; None sem o arquivo."""
+    try:
+        with open(STATUS_UPLINK) as f:
+            s = json.load(f)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(s, dict):
+        return None
+    w = s.get('wifi') if isinstance(s.get('wifi'), dict) else {}
+    d = s.get('device') if isinstance(s.get('device'), dict) else {}
+    campos = {'state': s.get('state'), 'device': d.get('kind')}
+    campos.update((k, w[k]) for k in CAMPOS_WIFI if k in w)
+    if isinstance(campos.get('error'), str):  # "could not join "<rede>" ...": sem o nome
+        campos['error'] = re.sub(r'"(?:[^"\\]|\\.)*"', '"…"', campos['error'])
+    return json.dumps(campos, sort_keys=True, ensure_ascii=False)
+
+
 def resumo(conf):
     linhas = []
     try:
@@ -293,7 +424,7 @@ def resumo(conf):
         pass
     linhas.append('ferramentas: ' + ', '.join(versoes))
     unidades = ['zelador-carro-escuta.service', 'zelador-carro-envio.service', 'zelador-carro-coleta.timer',
-                'waze-on-cluster.service', 'mgu-uplink.service']
+                'waze-on-cluster.service', 'waze-on-cluster-journal.service', 'mgu-uplink.service']
     try:
         r = subprocess.run(['systemctl', 'is-active'] + unidades, stdout=subprocess.PIPE,
                            stderr=subprocess.DEVNULL, timeout=20, universal_newlines=True)
@@ -328,23 +459,18 @@ def coleta(conf):
             estado = json.load(f)
     except (OSError, ValueError):
         estado = {}
+    estado = {k: v for k, v in estado.items() if k in conf['coleta'] or k in ESTADO_FIXO}
     for nome, caminho in sorted(conf['coleta'].items()):
-        try:
-            st = os.stat(caminho)
-        except OSError:
-            continue
-        antes = estado.get(nome, {})
-        pos = antes.get('pos', 0)
-        if antes.get('ino') != st.st_ino or st.st_size < pos:
-            pos = 0
-        if st.st_size > pos:
-            with open(caminho, 'rb') as f:
-                f.seek(pos)
-                novo = f.read(min(st.st_size - pos, LIMITE_LEITURA))
-            if novo:
-                grava_coleta(conf, nome, novo)
-                pos += len(novo)
-        estado[nome] = {'ino': st.st_ino, 'pos': pos}
+        novo, estado[nome] = le_novo(caminho, estado.get(nome, {}))
+        if novo:
+            grava_coleta(conf, nome, novo)
+    diario, estado['uplink'] = diario_uplink(estado.get('uplink', {}))
+    wifi = estado_wifi()
+    if wifi is not None and wifi != estado.get('wifi'):
+        diario += ('%s wifi: %s\n' % (hora_utc(time.time() * 1000000), wifi)).encode()
+        estado['wifi'] = wifi
+    if diario:
+        grava_coleta(conf, 'uplink', diario)
     texto = resumo(conf)
     fixo = '\n'.join(l for l in texto.splitlines() if l.startswith(('ferramentas:', 'serviços:', 'internet:')))
     marca = hashlib.sha256(fixo.encode()).hexdigest()

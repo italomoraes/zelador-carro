@@ -2,9 +2,10 @@
 
 Ferramenta de depuração para a central iDrive 7 (MGU) de uma BMW, instalada e
 removida pela [mgu Store](https://github.com/robertnisipeanu/mgu-store). Ela
-grava, só lendo, a orientação da navegação BMW e o log do app "Mapas no
-painel" ([idrive-apps](https://github.com/robertnisipeanu/idrive-apps)), e
-manda tudo ao computador de casa quando o carro está no Wi-Fi de casa.
+grava, só lendo, a orientação da navegação BMW, o log do app "Mapas no
+painel" ([idrive-apps](https://github.com/robertnisipeanu/idrive-apps)) e o
+que o CarPlay e o Wi-Fi da loja registram, e manda tudo ao computador de casa
+quando o carro está no Wi-Fi de casa.
 
 Feita para **um carro e um computador**: o endereço e o certificado do
 receptor estão em `ferramenta/`. Para outro par, instale o receptor
@@ -16,7 +17,7 @@ receptor estão em `ferramenta/`. Para outro par, instale o receptor
 | Serviço | Como roda | O que faz |
 |---|---|---|
 | `zelador-carro-escuta` | root, sem rede | Assina (só lê) os atributos da orientação da navegação BMW (SOME/IP `0xFB1A`, `0xFB1B`, `0xFB1C` e `0xFB35`, instância `0x0080`) e grava cada mensagem nova em `/var/opt/zelador-carro/dados/escuta`, um arquivo por minuto, até 100 MB. Só assina 5 s depois que a navegação oferece o serviço, sem dizer o tipo dos eventos. Não chama métodos nem oferece serviços. |
-| `zelador-carro-coleta` (timer, a cada minuto) | root, sem rede | Copia o que entrou nos logs do Mapas no painel e do cluster-render e um resumo da central (versões, serviços, espaço, internet) para `dados/coleta`. |
+| `zelador-carro-coleta` (timer, a cada minuto) | root, sem rede | Copia para `dados/coleta` o que entrou nos logs do Mapas no painel e do cluster-render e no diário que o waze-on-cluster guarda na RAM (CarPlay, Android Auto, systemd e kernel, Wi-Fi incluído), seguindo cada arquivo quando ele gira. Copia também o diário do mgu-uplink (as buscas e conexões do Wi-Fi da loja), o estado do Wi-Fi quando muda (sem nomes de rede) e um resumo da central (versões, serviços, espaço, internet). |
 | `zelador-carro-envio` | uid 59473 (larga o root ao começar) | A cada 15 s, manda os arquivos prontos ao receptor por HTTPS, conferindo o certificado dele, e apaga cada um só depois da confirmação. Longe de casa, espera. |
 
 ## Segurança

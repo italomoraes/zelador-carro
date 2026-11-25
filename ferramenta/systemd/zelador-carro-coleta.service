@@ -1,5 +1,5 @@
 [Unit]
-Description=zelador-carro coleta: o que entrou no log do Mapas no painel e um resumo da central
+Description=zelador-carro coleta: o que entrou nos logs e diários (Mapas no painel, CarPlay, Wi-Fi da loja) e um resumo da central
 RequiresMountsFor=/var/opt
 
 [Service]
