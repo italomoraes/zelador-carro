@@ -3,6 +3,7 @@
 
     python3 -I zelador.py envio  [--conf ARQ]   o envio (começa root, larga o root)
     python3 -I zelador.py coleta [--conf ARQ]   a coleta (root, pelo timer)
+    python3 -I zelador.py dlt    [--conf ARQ]   grava a captura do DLT (root, serviço)
 
 Envio: como root, só prepara as pastas (donas do uid do envio, 0700); larga o
 root (uid e gid do envio, sem grupos) antes de abrir qualquer conexão e
@@ -31,9 +32,21 @@ Coleta, cada parte num .txt em dados/coleta, do dono do envio:
   ferramentas, os serviços ou a internet mudam, e a cada 30 min.
 Só lê o sistema; escreve só na pasta do zelador.
 
+DLT: o botão "Iniciar captura" do Mapas no painel abre, por até 5 min, a
+porta do dlt-daemon (3490), com os logs dos programas da BMW (o CarPlay, o
+Bluetooth, o Android Auto...) em INFO; fora disso o DLT fica desligado. O
+serviço olha a cada 2 s se a porta abriu; quando abre, conecta em 127.0.0.1
+e grava tudo o que chega num .txt em dados/coleta (o DLT em gzip, em base64,
+com o começo, o fim e o tamanho em linhas "#"), até 3 s depois de a porta
+fechar, ou até os limites. Só lê: nunca manda nada ao daemon nem muda o
+nível dos logs. Lê sem parar, com um buffer grande, porque o daemon espera o
+cliente que não lê (TimeOutOnSend = -1). Em casa, receptor/abre_dlt.py
+devolve o DLT cru.
+
 A internet da central (mgu-uplink) só deixa sair os uids registrados: o do
 envio está no component.json ("internet", "uids"); o root não sai.
 """
+import base64
 import gzip
 import hashlib
 import http.client
@@ -42,10 +55,12 @@ import os
 import re
 import secrets
 import signal
+import socket
 import ssl
 import subprocess
 import sys
 import time
+import zlib
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 CONF = os.path.join(AQUI, 'zelador.conf')
@@ -60,6 +75,16 @@ LIMITE_DIARIO = 5000  # linhas do diário do uplink por vez
 CAMPOS_WIFI = ('enabled', 'link', 'backend', 'paused', 'freq', 'allow5ghz', 'fiveOnly', 'scanning', 'signal',
                'error')
 ESTADO_FIXO = ('resumo', 'resumo_quando', 'uplink', 'wifi')  # o resto do estado são os arquivos de `coleta`
+DLT_PORTA = 3490  # a que a captura do app abre no dlt-daemon
+TCP_TABELAS = ('/proc/net/tcp6', '/proc/net/tcp')  # o daemon ouve em :::3490
+DLT_PASSO_S = 2  # de quanto em quanto tempo olha se a captura abriu
+DLT_TENTATIVAS = 3  # conexões por captura aberta
+DLT_FECHADA_S = 3  # depois que a porta fecha, ainda lê esse tempo e desconecta
+DLT_MAX_S = 6 * 60  # a captura do app dura até 5 min
+DLT_MAX_CRU = 96 << 20  # bytes do DLT por captura (a de 19/11 teve 60 MB em 5 min)
+DLT_MAX_ARQ = 32 << 20  # o .txt (gzip em base64); o receptor aceita até 64 MB
+DLT_BUFFER = 8 << 20  # folga no buffer de recepção, para o daemon nunca esperar por nós
+RCVBUFFORCE = getattr(socket, 'SO_RCVBUFFORCE', 33 if sys.platform.startswith('linux') else None)
 
 
 def log(msg):
@@ -424,7 +449,8 @@ def resumo(conf):
         pass
     linhas.append('ferramentas: ' + ', '.join(versoes))
     unidades = ['zelador-carro-escuta.service', 'zelador-carro-envio.service', 'zelador-carro-coleta.timer',
-                'waze-on-cluster.service', 'waze-on-cluster-journal.service', 'mgu-uplink.service']
+                'zelador-carro-dlt.service', 'waze-on-cluster.service', 'waze-on-cluster-journal.service',
+                'mgu-uplink.service']
     try:
         r = subprocess.run(['systemctl', 'is-active'] + unidades, stdout=subprocess.PIPE,
                            stderr=subprocess.DEVNULL, timeout=20, universal_newlines=True)
@@ -490,8 +516,227 @@ def coleta(conf):
     os.replace(tmp, caminho_estado)
 
 
+def relogio():
+    """Segundos que andam também com a central dormindo (CLOCK_BOOTTIME), onde há."""
+    c = getattr(time, 'CLOCK_BOOTTIME', None)
+    return time.clock_gettime(c) if c is not None else time.monotonic()
+
+
+def iso_agora():
+    return time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+
+
+def dlt_aberta():
+    """True se algo ouve (LISTEN) na porta do DLT: a captura do app está aberta."""
+    for tabela in TCP_TABELAS:
+        try:
+            with open(tabela) as f:
+                linhas = f.read().splitlines()[1:]
+        except OSError:
+            continue
+        for linha in linhas:
+            campos = linha.split()
+            if len(campos) > 3 and campos[3] == '0A':
+                try:
+                    if int(campos[1].rsplit(':', 1)[1], 16) == DLT_PORTA:
+                        return True
+                except (IndexError, ValueError):
+                    pass
+    return False
+
+
+def conecta_dlt():
+    """Um socket conectado à porta do DLT (127.0.0.1, ou ::1), ou None."""
+    for familia, host in ((socket.AF_INET, '127.0.0.1'), (socket.AF_INET6, '::1')):
+        try:
+            s = socket.socket(familia, socket.SOCK_STREAM)
+        except OSError:
+            continue
+        try:
+            try:  # acima do rmem_max: só com CAP_NET_ADMIN, só no Linux
+                if RCVBUFFORCE is None:
+                    raise OSError('sem SO_RCVBUFFORCE')
+                s.setsockopt(socket.SOL_SOCKET, RCVBUFFORCE, DLT_BUFFER)
+            except OSError:
+                try:
+                    s.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, DLT_BUFFER)
+                except OSError:
+                    pass
+            s.settimeout(5)
+            s.connect((host, DLT_PORTA))
+            s.settimeout(1)
+            return s
+        except OSError:
+            s.close()
+    return None
+
+
+class SaidaDlt:
+    """O .txt de uma captura: linhas "#" e o DLT em gzip, em base64 (linhas de 76)."""
+
+    def __init__(self, caminho):
+        fd = os.open(caminho, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        self.f = os.fdopen(fd, 'wb')
+        self.z = zlib.compressobj(1, zlib.DEFLATED, 16 + zlib.MAX_WBITS)
+        self.pendente = b''
+        self.escritos = 0
+
+    def _escreve(self, b):
+        self.f.write(b)
+        self.escritos += len(b)
+
+    def linha(self, texto):
+        self._escreve((texto + '\n').encode())
+
+    def dados(self, bloco):
+        self.pendente += self.z.compress(bloco)
+        corte = len(self.pendente) // 57 * 57
+        if corte:
+            self._escreve(base64.encodebytes(self.pendente[:corte]))
+            self.pendente = self.pendente[corte:]
+
+    def fecha(self, rodape):
+        try:
+            self.pendente += self.z.flush()
+            if self.pendente:
+                self._escreve(base64.encodebytes(self.pendente))
+            self.linha(rodape)
+        finally:
+            self.f.close()
+
+
+def entrega(conf, parte, caminho):
+    """O .part pronto vira o .txt que o envio manda (do dono do envio, 0600)."""
+    if os.geteuid() == 0:
+        os.chown(parte, conf['uid'], conf['uid'])
+    os.chmod(parte, 0o600)
+    os.replace(parte, caminho)
+
+
+def captura_dlt(conf):
+    """Grava uma captura, de quando conecta até DLT_FECHADA_S depois de a porta
+    fechar (o daemon não derruba quem já está conectado), o daemon fechar a
+    conexão, DLT_MAX_S ou os limites. O caminho do .txt, ou None se não
+    conectou."""
+    s = None
+    for i in range(DLT_TENTATIVAS):
+        s = conecta_dlt()
+        if s is not None or not dlt_aberta():
+            break
+        if i + 1 < DLT_TENTATIVAS:
+            time.sleep(DLT_PASSO_S)
+    if s is None:
+        log('dlt: a captura abriu, mas a porta %d não aceitou a conexão' % DLT_PORTA)
+        return None
+    p = pastas(conf)
+    base = os.path.join(p['coleta'], 'dlt-' + time.strftime('%Y%m%d-%H%M%S', time.gmtime()))
+    caminho, i = base + '.txt', 1
+    while os.path.exists(caminho) or os.path.exists(caminho + '.part'):
+        caminho = '%s-%d.txt' % (base, i)
+        i += 1
+    parte = caminho + '.part'
+    cru, motivo = 0, 'parou'
+    try:
+        saida = SaidaDlt(parte)
+    except OSError as e:
+        s.close()
+        log('dlt: não consegui criar %s: %s' % (parte, e))
+        return None
+    try:
+        saida.linha('# zelador-carro dlt: o que o dlt-daemon mandou pela porta %d na captura do app '
+                    '(o DLT em gzip, em base64)' % DLT_PORTA)
+        saida.linha('# início %s' % iso_agora())
+        log('dlt: a captura abriu; gravando em %s' % os.path.basename(caminho))
+        comeco = teste = relogio()
+        fechada = None
+        while True:
+            agora = relogio()
+            if agora - comeco >= DLT_MAX_S:
+                motivo = 'passou de %d s' % DLT_MAX_S
+                break
+            if agora - teste >= 1:
+                teste = agora
+                if dlt_aberta():
+                    fechada = None
+                elif fechada is None:
+                    fechada = agora
+            if fechada is not None and agora - fechada >= DLT_FECHADA_S:
+                motivo = 'a captura fechou'
+                break
+            try:
+                bloco = s.recv(1 << 16)
+            except socket.timeout:
+                continue
+            except OSError as e:
+                motivo = 'a conexão caiu (%s)' % e
+                break
+            if not bloco:
+                motivo = 'o daemon fechou a conexão'
+                break
+            bloco = bloco[:DLT_MAX_CRU - cru]
+            try:
+                saida.dados(bloco)
+            except OSError as e:
+                motivo = 'erro ao gravar (%s)' % e
+                break
+            cru += len(bloco)
+            if cru >= DLT_MAX_CRU or saida.escritos >= DLT_MAX_ARQ:
+                motivo = 'chegou ao limite'
+                break
+    finally:
+        s.close()  # antes de tudo: o daemon nunca fica esperando por nós
+        try:
+            saida.fecha('# fim %s: %d bytes do DLT, %s' % (iso_agora(), cru, motivo))
+            entrega(conf, parte, caminho)
+        except OSError as e:
+            log('dlt: não consegui fechar %s: %s' % (os.path.basename(parte), e))
+    log('dlt: captura gravada, %d KB do DLT em %s (%s)' % (cru >> 10, os.path.basename(caminho), motivo))
+    return caminho
+
+
+def termina_sobras(conf):
+    """As capturas que ficaram pela metade (a central desligou ou o serviço parou
+    no meio) fecham como estão, com uma linha dizendo isso."""
+    p = pastas(conf)
+    try:
+        nomes = os.listdir(p['coleta'])
+    except OSError:
+        return
+    for n in sorted(nomes):
+        if n.startswith('dlt-') and n.endswith('.txt.part'):
+            parte = os.path.join(p['coleta'], n)
+            try:
+                with open(parte, 'ab') as f:
+                    f.write(b'\n# cortada: o servi\xc3\xa7o parou no meio da captura\n')
+                entrega(conf, parte, parte[:-len('.part')])
+                log('dlt: a captura cortada %s foi fechada como estava' % n[:-len('.part')])
+            except OSError as e:
+                log('dlt: não consegui fechar %s: %s' % (n, e))
+
+
+def passo_dlt(conf, esperando_fechar):
+    """Um passo do serviço: grava se a captura abriu, uma vez por abertura.
+    Devolve se deve esperar a porta fechar antes da próxima."""
+    if not dlt_aberta():
+        return False
+    if not esperando_fechar:
+        captura_dlt(conf)
+    return True
+
+
+def dlt(conf):
+    p = pastas(conf)
+    os.makedirs(p['coleta'], mode=0o700, exist_ok=True)
+    termina_sobras(conf)
+    log('dlt: esperando a captura do app (porta %d)' % DLT_PORTA)
+    esperando = False
+    while True:
+        esperando = passo_dlt(conf, esperando)
+        time.sleep(DLT_PASSO_S)
+
+
 def main(argv):
-    if len(argv) < 2 or argv[1] not in ('envio', 'coleta'):
+    if len(argv) < 2 or argv[1] not in ('envio', 'coleta', 'dlt'):
         raise SystemExit(__doc__)
     conf_arq = CONF
     if len(argv) == 4 and argv[2] == '--conf':
@@ -502,6 +747,8 @@ def main(argv):
     signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
     if argv[1] == 'envio':
         envio(conf)
+    elif argv[1] == 'dlt':
+        dlt(conf)
     else:
         coleta(conf)
 

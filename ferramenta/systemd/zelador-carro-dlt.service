@@ -1,0 +1,28 @@
+[Unit]
+Description=zelador-carro dlt: grava a captura do DLT que o botão "Iniciar captura" do Mapas no painel abre
+RequiresMountsFor=/var/opt
+After=local-fs.target
+StartLimitIntervalSec=600
+StartLimitBurst=10
+
+[Service]
+# root: escreve na pasta do envio e põe um buffer de recepção grande
+# (CAP_NET_ADMIN). Só conecta em 127.0.0.1:3490 enquanto a captura do app
+# está aberta e só lê: nunca manda nada ao dlt-daemon. Nice 5, não 19: o
+# daemon espera o cliente que não lê, então este precisa ler sem atraso.
+ExecStart=/var/opt/mgu-python/current/bin/python3 -I /var/opt/zelador-carro/current/zelador.py dlt
+Restart=always
+RestartSec=30
+TimeoutStopSec=10
+NoNewPrivileges=yes
+CapabilityBoundingSet=CAP_CHOWN CAP_FOWNER CAP_DAC_OVERRIDE CAP_NET_ADMIN
+Nice=5
+CPUQuota=25%
+MemoryLimit=96M
+TasksMax=8
+LimitCORE=1
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

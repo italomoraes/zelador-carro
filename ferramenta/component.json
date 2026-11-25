@@ -1,10 +1,10 @@
 {
   "id": "zelador-carro",
   "kind": "tool",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "license": "MIT",
   "title": "Zelador do carro (depuração)",
-  "description": "Ferramenta de depuração: grava, só lendo, a orientação da navegação BMW, os logs do Mapas no painel e o que o CarPlay e o Wi-Fi da loja registram, e manda ao computador de casa quando o carro está no Wi-Fi de casa. Remova quando não precisar mais.",
+  "description": "Ferramenta de depuração: grava, só lendo, a orientação da navegação BMW, os logs do Mapas no painel, o que o CarPlay e o Wi-Fi da loja registram e a captura do DLT aberta pelo botão \"Iniciar captura\" do Mapas no painel, e manda ao computador de casa quando o carro está no Wi-Fi de casa. Remova quando não precisar mais.",
   "requires": { "mgu-deploy": "0.7.17", "mgu-python": "1.0.0", "mgu-uplink": "0.4.0" },
   "uninstallable": true,
   "mguHmi": ["ID7"],
@@ -20,12 +20,14 @@
     { "name": "zelador-carro-escuta.service", "from": "systemd/zelador-carro-escuta.service" },
     { "name": "zelador-carro-envio.service", "from": "systemd/zelador-carro-envio.service" },
     { "name": "zelador-carro-coleta.service", "from": "systemd/zelador-carro-coleta.service" },
-    { "name": "zelador-carro-coleta.timer", "from": "systemd/zelador-carro-coleta.timer" }
+    { "name": "zelador-carro-coleta.timer", "from": "systemd/zelador-carro-coleta.timer" },
+    { "name": "zelador-carro-dlt.service", "from": "systemd/zelador-carro-dlt.service" }
   ],
   "enable": [
     { "unit": "zelador-carro-escuta.service", "target": "multi-user.target" },
     { "unit": "zelador-carro-envio.service", "target": "multi-user.target" },
-    { "unit": "zelador-carro-coleta.timer", "target": "timers.target" }
+    { "unit": "zelador-carro-coleta.timer", "target": "timers.target" },
+    { "unit": "zelador-carro-dlt.service", "target": "multi-user.target" }
   ],
-  "restart": ["zelador-carro-escuta.service", "zelador-carro-envio.service"]
+  "restart": ["zelador-carro-escuta.service", "zelador-carro-envio.service", "zelador-carro-dlt.service"]
 }

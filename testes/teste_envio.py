@@ -1,15 +1,20 @@
 # SPDX-License-Identifier: MIT
-"""Testes do envio, da coleta (ferramenta/zelador.py) e do receptor
-(receptor/receptor.py), de ponta a ponta em 127.0.0.1, sem root.
+"""Testes do envio, da coleta, da gravação do DLT (ferramenta/zelador.py), do
+receptor (receptor/receptor.py) e de receptor/abre_dlt.py, de ponta a ponta em
+127.0.0.1, sem root.
 
     python3 -I testes/teste_envio.py
 
 Precisa do `openssl` (os certificados de teste)."""
+import base64
+import gzip
 import http.client
 import importlib.util
 import json
 import os
+import random
 import shutil
+import socket
 import ssl
 import subprocess
 import sys
@@ -243,11 +248,248 @@ def testa_uplink(zelador, tmp, conf):
         zelador.JOURNALCTL, zelador.BOOT_ID, zelador.STATUS_UPLINK = antigos
 
 
+CABECALHO_TCP = ('  sl  local_address                         remote_address                        st tx_queue '
+                 'rx_queue tr tm->when retrnsmt   uid  timeout inode\n')
+
+
+def linha_tcp(porta, estado, v4=False):
+    zero = '0' * (8 if v4 else 32)
+    return ('   0: %s:%04X %s:0000 %s 00000000:00000000 00:00000000 00000000     0        0 12345 1 '
+            '0000000000000000 100 0 0 10 0\n' % (zero, porta, zero, estado))
+
+
+def tabela(caminho, *linhas):
+    with open(caminho + '.tmp', 'w') as f:
+        f.write(CABECALHO_TCP + ''.join(linhas))
+    os.replace(caminho + '.tmp', caminho)
+
+
+def gera_dlt(n):
+    """Bytes parecidos com DLT: cabeçalho, texto e um pouco de binário."""
+    r = random.Random(7)
+    partes, total = [], 0
+    while total < n:
+        p = (b'\x3d\x01\x00\x40MGHS' + ('ACP NAV RouteGuidanceService atualizou %d ' % r.randrange(10 ** 6)).encode()
+             + bytes(r.randrange(256) for _ in range(24)))
+        partes.append(p)
+        total += len(p)
+    return b''.join(partes)[:n]
+
+
+class FalsoDaemon(threading.Thread):
+    """Um dlt-daemon de mentira: manda `dados` em pedaços ao primeiro cliente;
+    depois `fecha()` (a captura fecha: some o LISTEN) e fecha a porta sem
+    derrubar o cliente, como o de verdade. Anota o que o cliente mandou e se
+    e quando ele desconectou."""
+
+    def __init__(self, dados, fecha, pedaco=4096, pausa=0.002):
+        super().__init__(daemon=True)
+        self.dados, self.fecha, self.pedaco, self.pausa = dados, fecha, pedaco, pausa
+        self.srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.srv.bind(('127.0.0.1', 0))
+        self.srv.listen(1)
+        self.porta = self.srv.getsockname()[1]
+        self.recebido = b''
+        self.fechou_em = self.desconectou_em = None
+
+    def run(self):
+        self.srv.settimeout(20)
+        try:
+            c, _ = self.srv.accept()
+        except OSError:
+            return
+        for i in range(0, len(self.dados), self.pedaco):
+            try:
+                c.sendall(self.dados[i:i + self.pedaco])
+            except OSError:
+                break
+            time.sleep(self.pausa)
+        self.fechou_em = time.time()
+        self.fecha()
+        self.srv.close()
+        c.settimeout(0.2)
+        fim = time.time() + 15
+        while time.time() < fim:
+            try:
+                r = c.recv(4096)
+            except socket.timeout:
+                continue
+            except OSError:
+                self.desconectou_em = time.time()
+                break
+            if not r:
+                self.desconectou_em = time.time()
+                break
+            self.recebido += r
+        c.close()
+
+
+def capturas(p):
+    return {n for n in os.listdir(p['coleta']) if n.startswith('dlt-')}
+
+
+def testa_dlt(zelador, receptor, abre_dlt, tmp, conf):
+    """Devolve (nome do .txt da captura completa, os bytes mandados)."""
+    p = zelador.pastas(conf)
+    pasta = os.path.join(tmp, 'dlt')
+    os.makedirs(pasta)
+    tcp6, tcp4 = os.path.join(pasta, 'tcp6'), os.path.join(pasta, 'tcp')
+    antigos = (zelador.TCP_TABELAS, zelador.DLT_PORTA, zelador.DLT_PASSO_S, zelador.DLT_FECHADA_S,
+               zelador.DLT_MAX_CRU, zelador.relogio, zelador.captura_dlt)
+    zelador.TCP_TABELAS = (tcp6, tcp4)
+    zelador.DLT_PASSO_S = 0.1
+    zelador.DLT_FECHADA_S = 0.5
+    try:
+        zelador.DLT_PORTA = 3490
+        tabela(tcp6, linha_tcp(3490, '0A'))
+        tabela(tcp4)
+        ok('dlt: LISTEN na porta 3490 (tcp6) é a captura aberta', zelador.dlt_aberta())
+        tabela(tcp6, linha_tcp(3490, '01'), linha_tcp(3491, '0A'))
+        ok('uma conexão na 3490 ou outra porta em LISTEN não é', not zelador.dlt_aberta())
+        tabela(tcp6)
+        tabela(tcp4, linha_tcp(3490, '0A', v4=True))
+        ok('no tcp (IPv4) também conta', zelador.dlt_aberta())
+        os.unlink(tcp4)
+        os.unlink(tcp6)
+        ok('sem as tabelas: fechada', not zelador.dlt_aberta())
+
+        dados = gera_dlt(300 << 10)
+        d = FalsoDaemon(dados, lambda: tabela(tcp6))
+        zelador.DLT_PORTA = d.porta
+        tabela(tcp6, linha_tcp(d.porta, '0A'))
+        tabela(tcp4)
+        d.start()
+        caminho = zelador.captura_dlt(conf)
+        d.join(20)
+        nome = os.path.basename(caminho or '')
+        ok('a captura vira um .txt em coleta, sem sobrar .part',
+           caminho is not None and os.path.dirname(caminho) == p['coleta'] and nome.endswith('.txt') and
+           capturas(p) == {nome})
+        ok('0600', caminho is not None and os.stat(caminho).st_mode & 0o777 == 0o600)
+        texto = ler(caminho) if caminho else b''
+        ok('começa pela linha que diz o que é', texto.startswith(b'# zelador-carro dlt:'))
+        dlt, esperado, _ = abre_dlt.abre(caminho) if caminho else (b'', None, [])
+        ok('abre_dlt devolve exatamente o que o daemon mandou', dlt == dados and esperado == len(dados))
+        ok('o rodapé diz por que parou', b'bytes do DLT, a captura fechou' in texto)
+        ok('o zelador não mandou nada ao daemon', d.recebido == b'')
+        ok('e desconectou sozinho logo depois de a porta fechar',
+           d.desconectou_em is not None and 0.3 <= d.desconectou_em - d.fechou_em <= 4)
+        ok('o receptor aceita o nome', bool(receptor.NOME.fullmatch('coleta/' + nome)))
+        ok('e o envio vai mandar', ('coleta', nome, caminho) in zelador.prontos(conf))
+
+        antes = capturas(p)
+        zelador.DLT_MAX_CRU = 50000
+        d = FalsoDaemon(dados, lambda: tabela(tcp6))
+        zelador.DLT_PORTA = d.porta
+        tabela(tcp6, linha_tcp(d.porta, '0A'))
+        d.start()
+        c2 = zelador.captura_dlt(conf)
+        d.join(20)
+        zelador.DLT_MAX_CRU = antigos[4]
+        dlt, esperado, _ = abre_dlt.abre(c2) if c2 else (b'', None, [])
+        ok('no limite: para, desconecta e guarda o começo',
+           dlt == dados[:50000] and esperado == 50000 and b'chegou ao limite' in ler(c2) and
+           d.desconectou_em is not None and d.recebido == b'' and len(capturas(p) - antes) == 1)
+
+        antes = capturas(p)
+        chamadas = [0]
+
+        def relogio_que_para():
+            chamadas[0] += 1
+            if chamadas[0] > 6:
+                raise SystemExit(0)
+            return antigos[5]()
+
+        zelador.relogio = relogio_que_para
+        d = FalsoDaemon(dados, lambda: tabela(tcp6), pausa=0.02)
+        zelador.DLT_PORTA = d.porta
+        tabela(tcp6, linha_tcp(d.porta, '0A'))
+        d.start()
+        try:
+            zelador.captura_dlt(conf)
+            parou = False
+        except SystemExit:
+            parou = True
+        zelador.relogio = antigos[5]
+        d.join(20)
+        novos = sorted(capturas(p) - antes)
+        c3 = os.path.join(p['coleta'], novos[0]) if len(novos) == 1 else None
+        dlt, esperado, _ = abre_dlt.abre(c3) if c3 and c3.endswith('.txt') else (b'', None, [])
+        ok('parado no meio (SIGTERM): fecha o .txt com o que chegou',
+           parou and c3 is not None and c3.endswith('.txt') and 0 < len(dlt) < len(dados) and
+           dados.startswith(dlt) and esperado == len(dlt) and b'bytes do DLT, parou' in ler(c3) and
+           d.desconectou_em is not None)
+
+        comprimido = gzip.compress(dados, 1)
+        metade = comprimido[:len(comprimido) // 2 // 57 * 57]
+        sobra = os.path.join(p['coleta'], 'dlt-20260101-000000.txt.part')
+        # a última linha pela metade, como quando a central desliga no meio de uma escrita
+        escreve(sobra, b'# zelador-carro dlt: teste\n# in\xc3\xadcio 2026-01-01T00:00:00Z\n' +
+                base64.encodebytes(metade) + base64.encodebytes(comprimido[len(metade):len(metade) + 57])[:30])
+        zelador.termina_sobras(conf)
+        c4 = sobra[:-len('.part')]
+        dlt, esperado, _ = abre_dlt.abre(c4) if os.path.exists(c4) else (b'', None, [])
+        ok('sobra .part de uma central que desligou: vira .txt, marcada, e abre até onde chegou',
+           not os.path.exists(sobra) and os.path.exists(c4) and b'# cortada' in ler(c4) and
+           0 < len(dlt) < len(dados) and dados.startswith(dlt) and esperado is None)
+
+        antes = capturas(p)
+        livre = socket.socket()
+        livre.bind(('127.0.0.1', 0))
+        zelador.DLT_PORTA = livre.getsockname()[1]
+        livre.close()
+        tabela(tcp6, linha_tcp(zelador.DLT_PORTA, '0A'))
+        t0 = time.time()
+        r = zelador.captura_dlt(conf)
+        ok('a porta aberta que recusa a conexão: desiste logo, sem arquivo',
+           r is None and capturas(p) == antes and time.time() - t0 < 5)
+
+        feitas = []
+        zelador.captura_dlt = lambda c: feitas.append(1)
+        tabela(tcp6, linha_tcp(zelador.DLT_PORTA, '0A'))
+        e1 = zelador.passo_dlt(conf, False)
+        e2 = zelador.passo_dlt(conf, e1)
+        tabela(tcp6)
+        e3 = zelador.passo_dlt(conf, e2)
+        tabela(tcp6, linha_tcp(zelador.DLT_PORTA, '0A'))
+        e4 = zelador.passo_dlt(conf, e3)
+        ok('o serviço grava uma vez por abertura da captura',
+           (e1, e2, e3, e4) == (True, True, False, True) and len(feitas) == 2)
+    finally:
+        (zelador.TCP_TABELAS, zelador.DLT_PORTA, zelador.DLT_PASSO_S, zelador.DLT_FECHADA_S,
+         zelador.DLT_MAX_CRU, zelador.relogio, zelador.captura_dlt) = antigos
+
+    # o serviço de verdade, como processo: fecha as sobras e espera a captura
+    proc_dir = os.path.join(tmp, 'dlt-processo')
+    atual = os.path.join(proc_dir, 'current')
+    os.makedirs(atual)
+    shutil.copy(os.path.join(RAIZ, 'ferramenta', 'zelador.py'), atual)
+    conf_p = dict(conf, pasta=os.path.join(proc_dir, 'carro'))
+    arq_conf = os.path.join(atual, 'zelador.conf')
+    with open(arq_conf, 'w') as f:
+        json.dump(conf_p, f)
+    pp = zelador.pastas(conf_p)
+    escreve(os.path.join(pp['coleta'], 'dlt-20260101-000001.txt.part'), b'# zelador-carro dlt: teste\n')
+    proc = subprocess.Popen([sys.executable, '-I', os.path.join(atual, 'zelador.py'), 'dlt', '--conf', arq_conf],
+                            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
+    limite = time.time() + 10
+    while time.time() < limite and not os.path.exists(os.path.join(pp['coleta'], 'dlt-20260101-000001.txt')):
+        time.sleep(0.1)
+    time.sleep(0.5)
+    proc.terminate()
+    saida = proc.communicate(timeout=10)[0]
+    ok('o processo dlt fecha as sobras, espera a captura e sai limpo no SIGTERM',
+       os.path.exists(os.path.join(pp['coleta'], 'dlt-20260101-000001.txt')) and
+       'esperando a captura do app' in saida and proc.returncode == 0)
+    return nome, dados
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix='zelador-teste-')
     try:
         receptor = modulo('receptor', os.path.join(RAIZ, 'receptor', 'receptor.py'))
         zelador = modulo('zelador', os.path.join(RAIZ, 'ferramenta', 'zelador.py'))
+        abre_dlt = modulo('abre_dlt', os.path.join(RAIZ, 'receptor', 'abre_dlt.py'))
         casa = os.path.join(tmp, 'casa')
         certificado(casa, '127.0.0.1')
         srv = sobe(receptor, casa)
@@ -361,6 +603,7 @@ def main():
 
         testa_girados(zelador, tmp)
         testa_uplink(zelador, tmp, conf)
+        nome_dlt, dados_dlt = testa_dlt(zelador, receptor, abre_dlt, tmp, conf)
 
         # o envio de verdade, como processo
         atual = os.path.join(tmp, 'current')
@@ -382,6 +625,12 @@ def main():
         ok('o processo de envio manda tudo o que está pronto', not restantes and
            ler(os.path.join(casa, 'recebidos', 'escuta', 'escuta-d.txt')) == b'pelo processo\n')
         ok('e diz que alcançou o receptor', 'receptor alcançado' in saida and 'mandou' in saida)
+        chegou = os.path.join(casa, 'recebidos', 'coleta', nome_dlt)
+        dlt, esperado, _ = abre_dlt.abre(chegou) if os.path.exists(chegou) else (b'', None, [])
+        ok('a captura do DLT chega em casa e abre igual', dlt == dados_dlt and esperado == len(dados_dlt))
+        r = abre_dlt.main(['abre_dlt.py', chegou]) if os.path.exists(chegou) else 1
+        cru = chegou[:-len('.txt')] + '.dlt'
+        ok('abre_dlt.py grava o .dlt ao lado', r == 0 and os.path.exists(cru) and ler(cru) == dados_dlt)
         srv.shutdown()
         srv.server_close()
         escreve(os.path.join(p['escuta'], 'escuta-e.txt'), b'sem receptor\n')
