@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 """Testes do envio, da coleta, da gravação do DLT (ferramenta/zelador.py), do
-receptor (receptor/receptor.py) e de receptor/abre_dlt.py, de ponta a ponta em
+receptor (receptor/receptor.py) e de receptor/abre_dlt.py e abre_salvo.py, de ponta a ponta em
 127.0.0.1, sem root.
 
     python3 -I testes/teste_envio.py
@@ -484,12 +484,103 @@ def testa_dlt(zelador, receptor, abre_dlt, tmp, conf):
     return nome, dados
 
 
+def testa_salvos(zelador, abre_salvo, tmp, conf):
+    """Os arquivos do Salvar logs do Mapas no painel: copiados uma vez cada, sem
+    mexer na pasta dele. Devolve (nome do .txt de um deles, o .tar.gz)."""
+    p = zelador.pastas(conf)
+    moc = os.path.join(tmp, 'moc-saved')
+    os.makedirs(moc)
+    conf_s = dict(conf, salvos=moc)
+
+    def copias():
+        return sorted(n for n in os.listdir(p['coleta']) if n.startswith('salvo-') and n.endswith('.txt'))
+
+    ok('salvos: sem a pasta, nada e estado vazio', zelador.salvos(dict(conf, salvos=os.path.join(tmp, 'nao-ha')), {}) == {})
+    ok('salvos: sem a chave na configuração, nada', zelador.salvos(conf, {}) == {})
+    random.seed(7)
+    a = bytes(random.getrandbits(8) for _ in range(300000))  # mais de um pedaço de leitura
+    b = b'segundo arquivo'
+    c = b'terceiro'
+    escreve(os.path.join(moc, 'woc-logs-20261125T164304Z.tar.gz'), a)
+    escreve(os.path.join(moc, 'woc-logs-20261125T170000Z.tar.gz'), b)
+    escreve(os.path.join(moc, 'woc-logs-20261125T180000Z.tar.gz'), c)
+    escreve(os.path.join(moc, '.woc-logs-20261125T190000Z.tar.gz.part'), b'ainda salvando')
+    escreve(os.path.join(moc, 'outro.tar.gz'), b'nao e do salvar logs')
+    os.symlink('/etc/hosts', os.path.join(moc, 'woc-logs-20261125T200000Z.tar.gz'))
+    escreve(os.path.join(p['coleta'], 'salvo-woc-logs-20261124T000000Z.txt.part'), b'sobra')
+    antes_moc = {n: ler(os.path.join(moc, n)) for n in os.listdir(moc) if not os.path.islink(os.path.join(moc, n))}
+
+    estado = zelador.salvos(conf_s, {})
+    ok('salvos: 2 por coleta, do mais antigo', copias() == ['salvo-woc-logs-20261125T164304Z.txt',
+                                                             'salvo-woc-logs-20261125T170000Z.txt'])
+    ok('salvos: o .part, outros nomes e links ficam de fora',
+       sorted(estado) == ['woc-logs-20261125T164304Z.tar.gz', 'woc-logs-20261125T170000Z.tar.gz'])
+    ok('salvos: a sobra .part nossa sai',
+       not os.path.exists(os.path.join(p['coleta'], 'salvo-woc-logs-20261124T000000Z.txt.part')))
+    estado = zelador.salvos(conf_s, estado)
+    ok('salvos: na coleta seguinte, o terceiro', len(copias()) == 3 and len(estado) == 3)
+    estado = zelador.salvos(conf_s, estado)
+    ok('salvos: nada copiado de novo', len(copias()) == 3)
+    ok('salvos: a pasta do Mapas no painel fica igual',
+       {n: ler(os.path.join(moc, n)) for n in os.listdir(moc) if not os.path.islink(os.path.join(moc, n))} == antes_moc)
+    txt = os.path.join(p['coleta'], 'salvo-woc-logs-20261125T164304Z.txt')
+    ok('salvos: a cópia é 0600', os.stat(txt).st_mode & 0o777 == 0o600)
+    dados, fim = abre_salvo.abre(txt)
+    ok('abre_salvo: devolve o arquivo igual', dados == a and fim[0] == len(a))
+
+    os.unlink(os.path.join(moc, 'woc-logs-20261125T164304Z.tar.gz'))
+    estado = zelador.salvos(conf_s, estado)
+    ok('salvos: o que o Mapas no painel apagou sai do estado',
+       'woc-logs-20261125T164304Z.tar.gz' not in estado and len(estado) == 2)
+    grande = os.path.join(moc, 'woc-logs-20261125T210000Z.tar.gz')
+    with open(grande, 'wb') as f:
+        f.truncate(zelador.SALVO_MAX + 1)
+    estado = zelador.salvos(conf_s, estado)
+    ok('salvos: um acima de 16 MB não é copiado, nem tentado de novo',
+       len(copias()) == 3 and 'woc-logs-20261125T210000Z.tar.gz' in estado)
+    os.unlink(grande)
+
+    escreve(os.path.join(moc, 'woc-logs-20261125T220000Z.tar.gz'), b'vai mudar')
+    lido = zelador.os.fstat
+
+    def fstat_que_muda(fd, _chamadas=[0]):
+        st = lido(fd)
+        _chamadas[0] += 1
+        if _chamadas[0] == 2:  # o fstat depois da leitura
+            return os.stat_result(st[:8] + (st.st_mtime + 5,) + st[9:])
+        return st
+    zelador.os.fstat = fstat_que_muda
+    try:
+        estado = zelador.salvos(conf_s, estado)
+    finally:
+        zelador.os.fstat = lido
+    ok('salvos: mudou durante a leitura, não copia e tenta de novo',
+       len(copias()) == 3 and 'woc-logs-20261125T220000Z.tar.gz' not in estado and
+       not [n for n in os.listdir(p['coleta']) if n.endswith('.part')])
+    estado = zelador.salvos(conf_s, estado)
+    ok('salvos: na coleta seguinte, copia', len(copias()) == 4)
+
+    quebrado = os.path.join(tmp, 'quebrado.txt')
+    with open(txt, 'rb') as f:
+        linhas = f.read().split(b'\n')
+    linhas[3] = base64.b64encode(b'x' * 57)
+    escreve(quebrado, b'\n'.join(linhas))
+    ok('abre_salvo: um que não confere não é gravado',
+       abre_salvo.main(['abre_salvo.py', quebrado]) == 1 and not os.path.exists(os.path.join(tmp, 'quebrado.tar.gz')))
+
+    for n in copias():
+        if n != 'salvo-woc-logs-20261125T170000Z.txt':
+            os.unlink(os.path.join(p['coleta'], n))
+    return 'salvo-woc-logs-20261125T170000Z.txt', b
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix='zelador-teste-')
     try:
         receptor = modulo('receptor', os.path.join(RAIZ, 'receptor', 'receptor.py'))
         zelador = modulo('zelador', os.path.join(RAIZ, 'ferramenta', 'zelador.py'))
         abre_dlt = modulo('abre_dlt', os.path.join(RAIZ, 'receptor', 'abre_dlt.py'))
+        abre_salvo = modulo('abre_salvo', os.path.join(RAIZ, 'receptor', 'abre_salvo.py'))
         casa = os.path.join(tmp, 'casa')
         certificado(casa, '127.0.0.1')
         srv = sobe(receptor, casa)
@@ -604,6 +695,7 @@ def main():
         testa_girados(zelador, tmp)
         testa_uplink(zelador, tmp, conf)
         nome_dlt, dados_dlt = testa_dlt(zelador, receptor, abre_dlt, tmp, conf)
+        nome_salvo, dados_salvo = testa_salvos(zelador, abre_salvo, tmp, conf)
 
         # o envio de verdade, como processo
         atual = os.path.join(tmp, 'current')
@@ -631,6 +723,11 @@ def main():
         r = abre_dlt.main(['abre_dlt.py', chegou]) if os.path.exists(chegou) else 1
         cru = chegou[:-len('.txt')] + '.dlt'
         ok('abre_dlt.py grava o .dlt ao lado', r == 0 and os.path.exists(cru) and ler(cru) == dados_dlt)
+        chegou = os.path.join(casa, 'recebidos', 'coleta', nome_salvo)
+        r = abre_salvo.main(['abre_salvo.py', chegou]) if os.path.exists(chegou) else 1
+        tgz = chegou[:-len('.txt')] + '.tar.gz'
+        ok('o Salvar logs chega em casa e abre_salvo.py grava o .tar.gz igual',
+           r == 0 and os.path.exists(tgz) and ler(tgz) == dados_salvo)
         srv.shutdown()
         srv.server_close()
         escreve(os.path.join(p['escuta'], 'escuta-e.txt'), b'sem receptor\n')

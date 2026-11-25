@@ -27,6 +27,10 @@ Coleta, cada parte num .txt em dados/coleta, do dono do envio:
   volátil e curto (uns 4 min), por isso a coleta de cada minuto;
 - o estado do Wi-Fi da loja (status.json do mgu-uplink, sem nomes de rede),
   quando muda;
+- os arquivos novos do "Salvar logs" do Mapas no painel (a pasta `salvos` da
+  configuração), cada um num salvo-<nome>.txt (linhas "#" e o .tar.gz em
+  base64), até 2 por coleta. Assim o que foi salvo na rua chega em casa sem
+  baixar pelo hotspot. Em casa, receptor/abre_salvo.py devolve o .tar.gz;
 - um resumo da central (hora, tempo ligado, carga, memória, espaço, versões
   das ferramentas, estado dos serviços do zelador e da internet), quando as
   ferramentas, os serviços ou a internet mudam, e a cada 30 min.
@@ -57,6 +61,7 @@ import secrets
 import signal
 import socket
 import ssl
+import stat
 import subprocess
 import sys
 import time
@@ -74,7 +79,11 @@ BOOT_ID = '/proc/sys/kernel/random/boot_id'
 LIMITE_DIARIO = 5000  # linhas do diário do uplink por vez
 CAMPOS_WIFI = ('enabled', 'link', 'backend', 'paused', 'freq', 'allow5ghz', 'fiveOnly', 'scanning', 'signal',
                'error')
-ESTADO_FIXO = ('resumo', 'resumo_quando', 'uplink', 'wifi')  # o resto do estado são os arquivos de `coleta`
+ESTADO_FIXO = ('resumo', 'resumo_quando', 'uplink', 'wifi', 'salvos')  # o resto: os arquivos de `coleta`
+SALVO_NOME = re.compile(r'woc-logs-\d{8}T\d{6}Z\.tar\.gz')  # o nome que o Salvar logs dá (logs.js, NAME)
+SALVO_MAX = 16 << 20  # o maior que o Salvar logs guarda (logs.js, ARCHIVE_MAX)
+SALVOS_POR_VEZ = 2  # cópias por coleta; os outros ficam para o minuto seguinte
+SALVO_PEDACO = 57 * 1024  # lido e passado a base64 por vez (linhas de 76)
 DLT_PORTA = 3490  # a que a captura do app abre no dlt-daemon
 TCP_TABELAS = ('/proc/net/tcp6', '/proc/net/tcp')  # o daemon ouve em :::3490
 DLT_PASSO_S = 2  # de quanto em quanto tempo olha se a captura abriu
@@ -476,6 +485,106 @@ def resumo(conf):
     return '\n'.join(linhas) + '\n'
 
 
+def copia_salvo(conf, origem, nome):
+    """Copia um arquivo do Salvar logs para dados/coleta/salvo-<nome>.txt: linhas
+    "#" e o .tar.gz em base64, sem abrir nem mudar nada dele. True se copiou;
+    False se ele sumiu, não é um arquivo comum ou mudou durante a leitura."""
+    try:
+        fd = os.open(origem, os.O_RDONLY | os.O_NOFOLLOW | getattr(os, 'O_NONBLOCK', 0))
+    except OSError as e:
+        log('salvos: não consegui abrir %s: %s' % (nome, e))
+        return False
+    p = pastas(conf)
+    base = os.path.join(p['coleta'], 'salvo-' + nome[:-len('.tar.gz')])
+    caminho, i = base + '.txt', 1
+    while os.path.exists(caminho) or os.path.exists(caminho + '.part'):
+        caminho = '%s-%d.txt' % (base, i)
+        i += 1
+    parte = caminho + '.part'
+    pronto = False
+    try:
+        with os.fdopen(fd, 'rb') as f:
+            antes = os.fstat(f.fileno())
+            if not stat.S_ISREG(antes.st_mode) or antes.st_size > SALVO_MAX:
+                return False
+            sha = hashlib.sha256()
+            lidos = 0
+            sai = os.open(parte, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            with os.fdopen(sai, 'wb') as s:
+                s.write(('# zelador-carro salvo: %s, do "Salvar logs" do Mapas no painel (o arquivo em base64)\n'
+                         '# copiado %s\n' % (nome, iso_agora())).encode())
+                while lidos <= SALVO_MAX:
+                    bloco = f.read(SALVO_PEDACO)
+                    if not bloco:
+                        break
+                    sha.update(bloco)
+                    lidos += len(bloco)
+                    s.write(base64.encodebytes(bloco))
+                depois = os.fstat(f.fileno())
+                if (lidos != antes.st_size or depois.st_size != antes.st_size or
+                        depois.st_mtime_ns != antes.st_mtime_ns):
+                    log('salvos: %s mudou durante a leitura; fica para a próxima coleta' % nome)
+                    return False
+                s.write(('# fim: %d bytes, sha256 %s\n' % (lidos, sha.hexdigest())).encode())
+            entrega(conf, parte, caminho)
+            pronto = True
+    except OSError as e:
+        log('salvos: não consegui copiar %s: %s' % (nome, e))
+        return False
+    finally:
+        if not pronto:
+            try:
+                os.unlink(parte)
+            except OSError:
+                pass
+    log('salvos: %s copiado (%d KB)' % (nome, (lidos + 1023) // 1024))
+    return True
+
+
+def salvos(conf, antes):
+    """Os arquivos novos do "Salvar logs" do Mapas no painel (a pasta `salvos` da
+    configuração), copiados para dados/coleta; o Mapas no painel guarda só os 5
+    últimos e só os serve no hotspot. Só lê a pasta dele. O estado: {nome:
+    [tamanho, mtime_ns]} dos já copiados que ainda estão lá."""
+    pasta = conf.get('salvos')
+    if not pasta:
+        return {}
+    p = pastas(conf)
+    try:
+        for n in os.listdir(p['coleta']):  # sobras nossas de uma coleta interrompida
+            if n.startswith('salvo-') and n.endswith('.txt.part'):
+                os.unlink(os.path.join(p['coleta'], n))
+    except OSError:
+        pass
+    try:
+        nomes = sorted(n for n in os.listdir(pasta) if SALVO_NOME.fullmatch(n))
+    except OSError:
+        return {}
+    estado, feitos = {}, 0
+    for n in nomes:
+        origem = os.path.join(pasta, n)
+        try:
+            st = os.lstat(origem)
+        except OSError:
+            continue
+        if not stat.S_ISREG(st.st_mode):
+            continue
+        marca = [st.st_size, st.st_mtime_ns]
+        if antes.get(n) == marca:
+            estado[n] = marca
+            continue
+        if st.st_size > SALVO_MAX:
+            log('salvos: %s tem %d bytes, acima do limite de %d MB; não copio' % (n, st.st_size, SALVO_MAX >> 20))
+            estado[n] = marca
+            continue
+        if feitos >= SALVOS_POR_VEZ:
+            continue
+        if copia_salvo(conf, origem, n):
+            estado[n] = marca
+            feitos += 1
+    return estado
+
+
 def coleta(conf):
     p = pastas(conf)
     os.makedirs(p['estado'], mode=0o700, exist_ok=True)
@@ -490,6 +599,7 @@ def coleta(conf):
         novo, estado[nome] = le_novo(caminho, estado.get(nome, {}))
         if novo:
             grava_coleta(conf, nome, novo)
+    estado['salvos'] = salvos(conf, estado.get('salvos', {}))
     diario, estado['uplink'] = diario_uplink(estado.get('uplink', {}))
     wifi = estado_wifi()
     if wifi is not None and wifi != estado.get('wifi'):
