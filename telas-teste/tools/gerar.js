@@ -34,7 +34,7 @@ function estados() {
                 celulas: { Text: 'Cada botão abre uma versão da tela de dicas. Gire o botão sobre os itens e veja se a explicação aparece.' } }
         ].concat(VARIANTES.map((v) => ({
             id: botao(v).id, nome: botao(v).nome, tipo: 'button', widget: 'LT_Button_1Row', foco: 3,
-            celulas: { Text: `Variante ${v.n}: ${v.menu ? `menu (${v.menu.replace('LT_DropDownMenu_', '')}${v.troca ? `, troca por ${v.troca}` : ''}) / ` : ''}${estado(v).pecas.map((p) => p.widget.replace(/^LT_(Label|PreviewTable)_/, '')).join(' + ')}${!estado(v).pecas.some((p) => p.desenho) ? ' / sem desenho' : v.imagens ? ` / desenho ${v.imagens}` : ' / desenho pequeno'}${v.dica ? ` / dica ${v.dica}` : ''}` }
+            celulas: { Text: `Variante ${v.n}: ${v.menu ? `menu (${v.menu.replace(/^LT_(DropDownMenu|ValueList)_/, '')}${v.troca ? `, troca por ${v.troca}` : ''}) / ` : ''}${estado(v).pecas.map((p) => p.widget.replace(/^LT_(Label|PreviewTable)_/, '')).join(' + ')}${!estado(v).pecas.some((p) => p.desenho) ? ' / sem desenho' : v.imagens ? ` / desenho ${v.imagens}` : ' / desenho pequeno'}${v.dica ? ` / dica ${v.dica}` : ''}` }
         }))) }]
     };
     const variantes = VARIANTES.map((v) => {
@@ -42,7 +42,7 @@ function estados() {
         const itens = ITENS.map((it, i) => {
             const base = { id: e.item(i).id, nome: e.item(i).nome, foco: 3 };
             if (v.menu && it.tipo === 'lista') {
-                return Object.assign(base, { tipo: 'dropDownMenu', widget: v.menu,
+                return Object.assign(base, { tipo: /ValueList/.test(v.menu) ? 'valueList' : 'dropDownMenu', widget: v.menu,
                     cels: { HeaderText: { value: it.nome, type: 'Text' }, SelectedItem: { value: 0, type: 'UInt' } },
                     linhas: it.opcoes.map((o) => ({ ItemText: { value: o, type: 'Text' } })) });
             }

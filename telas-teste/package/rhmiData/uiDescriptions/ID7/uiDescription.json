@@ -61,7 +61,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 1: menu (2Row, troca por preview) / 1Text + 1Graphic_1TextBottom / desenho baixo",
+                "value": "Variante 1: menu (Regular) / 1Graphic_1TextBottom / desenho baixo",
                 "type": "Text"
               }
             }
@@ -83,7 +83,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 2: menu (2Row, troca por visivel) / 1Text + 1Graphic_1TextBottom / desenho baixo",
+                "value": "Variante 2: menu (Regular) / 1Text / sem desenho / dica longa",
                 "type": "Text"
               }
             }
@@ -105,29 +105,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 3: menu (2Row) / 1Graphic_1TextBottom / desenho baixo",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "54": {
-          "type": "button",
-          "name": "telasAbre4",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Variante 4: menu (1Row_2Col3070, troca por preview) / 1Text + 1Graphic_1TextBottom / desenho baixo",
+                "value": "Variante 3: menu (Regular, troca por preview) / 1Text + 1Graphic_1TextBottom / desenho baixo",
                 "type": "Text"
               }
             }
@@ -168,7 +146,7 @@
           ]
         },
         "1101": {
-          "type": "dropDownMenu",
+          "type": "valueList",
           "name": "telasV1Item0",
           "properties": {
             "Visible": {
@@ -320,10 +298,6 @@
         "1120": {
           "type": "preview",
           "name": "telasV1Peca0"
-        },
-        "1121": {
-          "type": "preview",
-          "name": "telasV1Peca1"
         }
       }
     },
@@ -360,7 +334,7 @@
           ]
         },
         "1201": {
-          "type": "dropDownMenu",
+          "type": "valueList",
           "name": "telasV2Item0",
           "properties": {
             "Visible": {
@@ -512,10 +486,6 @@
         "1220": {
           "type": "preview",
           "name": "telasV2Peca0"
-        },
-        "1221": {
-          "type": "preview",
-          "name": "telasV2Peca1"
         }
       }
     },
@@ -552,7 +522,7 @@
           ]
         },
         "1301": {
-          "type": "dropDownMenu",
+          "type": "valueList",
           "name": "telasV3Item0",
           "properties": {
             "Visible": {
@@ -704,198 +674,10 @@
         "1320": {
           "type": "preview",
           "name": "telasV3Peca0"
-        }
-      }
-    },
-    "14": {
-      "type": "state",
-      "name": "ST_ItaloTelas_V4",
-      "properties": {
-        "ParentState": {
-          "value": 1,
-          "type": "UInt"
         },
-        "Preview": {
-          "value": 1420,
-          "type": "UInt"
-        }
-      },
-      "components": {
-        "1400": {
-          "type": "title",
-          "name": "ST_ItaloTelas_V4_Title",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "SID_TELAS_TITLE",
-                "type": "StringId"
-              }
-            }
-          ]
-        },
-        "1401": {
-          "type": "dropDownMenu",
-          "name": "telasV4Item0",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "cells": {
-            "HeaderText": {
-              "value": "Mostrar em",
-              "type": "Text"
-            },
-            "SelectedItem": {
-              "value": 0,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "ItemText": {
-                "value": "Painel de instrumentos",
-                "type": "Text"
-              }
-            },
-            {
-              "ItemText": {
-                "value": "HUD",
-                "type": "Text"
-              }
-            },
-            {
-              "ItemText": {
-                "value": "Painel e HUD",
-                "type": "Text"
-              }
-            },
-            {
-              "ItemText": {
-                "value": "Nenhum",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "1402": {
-          "type": "checkBox",
-          "name": "telasV4Item1",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Ocultar a caixa de seta da BMW",
-                "type": "Text"
-              },
-              "eParam_RowSelected": {
-                "value": false,
-                "type": "Bool"
-              }
-            }
-          ]
-        },
-        "1403": {
-          "type": "checkBox",
-          "name": "telasV4Item2",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "CarPlay: Patch",
-                "type": "Text"
-              },
-              "eParam_RowSelected": {
-                "value": false,
-                "type": "Bool"
-              }
-            }
-          ]
-        },
-        "1404": {
-          "type": "checkBox",
-          "name": "telasV4Item3",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Android Auto",
-                "type": "Text"
-              },
-              "eParam_RowSelected": {
-                "value": false,
-                "type": "Bool"
-              }
-            }
-          ]
-        },
-        "1405": {
-          "type": "button",
-          "name": "telasV4Item4",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Salvar logs",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "1420": {
+        "1321": {
           "type": "preview",
-          "name": "telasV4Peca0"
-        },
-        "1421": {
-          "type": "preview",
-          "name": "telasV4Peca1"
+          "name": "telasV3Peca1"
         }
       }
     }

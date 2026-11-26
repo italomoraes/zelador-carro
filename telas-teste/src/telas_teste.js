@@ -234,7 +234,7 @@ class TelasTeste extends OnlineApp {
         const mostra = conteudo(v, i);
         const escritas = [];
         const usada = pecaDoItem(v, i);
-        if (v.troca) {
+        if (v.troca && !v.preenche) {
             escritas.push(this._trocaPeca(v, usada));
         }
         e.pecas.forEach((p, k) => {
@@ -258,8 +258,12 @@ class TelasTeste extends OnlineApp {
                     .catch((err) => anota(`variante ${v.n}: ${p.widget} desenho: ${err && err.message}`)));
             }
         });
+        const flush = () => Promise.resolve(this.rhmiApplication.flush && this.rhmiApplication.flush());
         return Promise.all(escritas)
-            .then(() => this.rhmiApplication.flush && this.rhmiApplication.flush())
+            .then(flush)
+            /* preenche: a peça nova recebe o conteúdo antes de a tela apontar
+             * para ela, para ver se o vazio da troca diminui. */
+            .then(() => (v.troca && v.preenche ? this._trocaPeca(v, usada).then(flush) : undefined))
             .catch((err) => anota(`variante ${v.n}: flush: ${err && err.message}`));
     }
 

@@ -25,10 +25,6 @@
                 <property id="2" value="1"/>
                 <property id="3" value="3"/>
             </component>
-            <component id="54" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
         </layoutGroup>
     </container>
     <container id="11" type="state" widget="LT_State_Regular_ContentHidden">
@@ -40,12 +36,11 @@
             </component>
         </layoutGroup>
         <layoutGroup id="311" name="ContentPreview">
-            <component id="1120" type="preview" widget="LT_PreviewTable_1Text"/>
-            <component id="1121" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
+            <component id="1120" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
         </layoutGroup>
         <layoutGroup id="123" name="List">
             <property id="3" value="1"/>
-            <component id="1101" type="dropDownMenu" widget="LT_DropDownMenu_2Row">
+            <component id="1101" type="valueList" widget="LT_ValueList_Regular">
                 <property id="2" value="1"/>
                 <property id="3" value="3"/>
             </component>
@@ -77,11 +72,10 @@
         </layoutGroup>
         <layoutGroup id="312" name="ContentPreview">
             <component id="1220" type="preview" widget="LT_PreviewTable_1Text"/>
-            <component id="1221" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
         </layoutGroup>
         <layoutGroup id="125" name="List">
             <property id="3" value="1"/>
-            <component id="1201" type="dropDownMenu" widget="LT_DropDownMenu_2Row">
+            <component id="1201" type="valueList" widget="LT_ValueList_Regular">
                 <property id="2" value="1"/>
                 <property id="3" value="3"/>
             </component>
@@ -112,11 +106,12 @@
             </component>
         </layoutGroup>
         <layoutGroup id="313" name="ContentPreview">
-            <component id="1320" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
+            <component id="1320" type="preview" widget="LT_PreviewTable_1Text"/>
+            <component id="1321" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
         </layoutGroup>
         <layoutGroup id="127" name="List">
             <property id="3" value="1"/>
-            <component id="1301" type="dropDownMenu" widget="LT_DropDownMenu_2Row">
+            <component id="1301" type="valueList" widget="LT_ValueList_Regular">
                 <property id="2" value="1"/>
                 <property id="3" value="3"/>
             </component>
@@ -133,42 +128,6 @@
                 <property id="3" value="3"/>
             </component>
             <component id="1305" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-        </layoutGroup>
-    </container>
-    <container id="14" type="state" widget="LT_State_Regular_ContentHidden">
-        <property id="9" value="1"/>
-        <property id="4" value="1420"/>
-        <layoutGroup id="128" name="Titlebar">
-            <component id="1400" type="title">
-                <property id="2" value="1"/>
-            </component>
-        </layoutGroup>
-        <layoutGroup id="314" name="ContentPreview">
-            <component id="1420" type="preview" widget="LT_PreviewTable_1Text"/>
-            <component id="1421" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
-        </layoutGroup>
-        <layoutGroup id="129" name="List">
-            <property id="3" value="1"/>
-            <component id="1401" type="dropDownMenu" widget="LT_DropDownMenu_1Row_2Col3070">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="1402" type="checkBox" widget="LT_CheckBox_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="1403" type="checkBox" widget="LT_CheckBox_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="1404" type="checkBox" widget="LT_CheckBox_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="1405" type="button" widget="LT_Button_1Row">
                 <property id="2" value="1"/>
                 <property id="3" value="3"/>
             </component>

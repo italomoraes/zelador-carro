@@ -101,6 +101,22 @@ os itens:
 | 3 | `LT_DropDownMenu_2Row` | uma peça só (desenho e 3 linhas para todos) |
 | 4 | `LT_DropDownMenu_1Row_2Col3070` (a de hoje no Mapas no painel) | propriedade `Preview` |
 
+**0.0.7 (26/11):** o `dropDownMenu` (2Row e 1Row) abre as opções numa janela
+por cima, como no Mapas no painel hoje. Trocar a peça da prévia pela
+propriedade `Preview` funciona, mas a direita fica vazia por ~0,6 s;
+`Visible` numa peça de prévia é recusado (`INVALID_PROPERTYID`).
+
+**0.0.8:** a lista de opções que abre no lugar, com bolinhas, como no
+Attention Assist: o tipo `valueList` com a peça `LT_ValueList_Regular`
+(células `HeaderText`, `SelectedItem` e `ItemText`, as que a interface
+aceita para ele).
+
+| Variante | Prévia |
+|---|---|
+| 1 | desenho e 3 linhas para todos os itens (`1Graphic_1TextBottom`) |
+| 2 | só texto, a explicação longa, para todos (`1Text`) |
+| 3 | troca de peça como na 0.0.7, mas com a peça nova preenchida antes da troca |
+
 Os itens são os do Mapas no painel, com dicas de exemplo. Apertar um item
 não faz nada: o app só mostra.
 
