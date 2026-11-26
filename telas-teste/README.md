@@ -84,6 +84,23 @@ com a fonte da própria interface (o `BMWTALG.ttf` de
 repositório), e as linhas batem com as fotos. Com `BMW_FONT` apontando para
 ela, `tools/teste.js` confere que cada dica cabe em 3 linhas.
 
+**0.0.6 (26/11):** a `1Text` mostra a explicação longa inteira (8 linhas, a
+área comporta ~10); as peças com título só mostram 1 ou 2 linhas.
+
+**0.0.7:** o menu como os da BMW (Attention Assist, modo manobrista), sem
+texto no topo da lista. "Mostrar em" é uma lista de opções
+(`dropDownMenu`, como no Mapas no painel) com a explicação longa à direita,
+só texto (`1Text`); os outros itens são caixas de marcar e um botão, com
+desenho e 3 linhas (`1Graphic_1TextBottom`). A prévia troca de peça entre
+os itens:
+
+| Variante | Lista de opções | Como a prévia troca de peça |
+|---|---|---|
+| 1 | `LT_DropDownMenu_2Row` (nome e valor embaixo) | a tela aponta a outra peça (propriedade `Preview`) |
+| 2 | `LT_DropDownMenu_2Row` | as duas peças no grupo, uma escondida (`Visible`) |
+| 3 | `LT_DropDownMenu_2Row` | uma peça só (desenho e 3 linhas para todos) |
+| 4 | `LT_DropDownMenu_1Row_2Col3070` (a de hoje no Mapas no painel) | propriedade `Preview` |
+
 Os itens são os do Mapas no painel, com dicas de exemplo. Apertar um item
 não faz nada: o app só mostra.
 

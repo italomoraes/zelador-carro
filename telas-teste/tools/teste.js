@@ -13,7 +13,7 @@ const fs = require('fs');
 const Module = require('module');
 const os = require('os');
 const path = require('path');
-const { ITENS, VARIANTES, estado, botao, conteudo } = require('../src/variantes.js');
+const { ITENS, VARIANTES, estado, botao, conteudo, pecaDoItem } = require('../src/variantes.js');
 const gerar = require('./gerar.js');
 
 let ok = 0;
@@ -58,6 +58,8 @@ if (process.env.BMW_FONT) {
     ITENS.forEach((it) => {
         const q = cabe.quebra(fonte, it.dica);
         confere(q.linhas.length <= 3 && !q.faltam.length, `a dica de "${it.nome}" cabe em 3 linhas (tem ${q.linhas.length}: ${q.linhas.join(' | ')})`);
+        const l = cabe.quebra(fonte, it.longa);
+        confere(l.linhas.length <= 9 && !l.faltam.length, `a explicação longa de "${it.nome}" cabe em 9 linhas (tem ${l.linhas.length})`);
     });
 } else {
     console.log('BMW_FONT não definido: o tamanho das dicas não foi conferido');
@@ -69,6 +71,7 @@ class Comp extends EventEmitter {
     constructor(nome, id) { super(); this.nome = nome; this.id = id; }
     getId() { return this.id; }
     setValue(row, cell, value, type) { chamadas.push({ nome: this.nome, cell, value, type }); return Promise.resolve(); }
+    setProperty(prop, value, type) { chamadas.push({ nome: this.nome, prop, value, type }); return Promise.resolve(); }
     updateResources() { return Promise.resolve(); }
 }
 const comps = {};
@@ -136,7 +139,24 @@ const espera = () => new Promise((r) => setTimeout(r, 30));
                 rhmi.emit('userEvent', { eventType: 'FOCUS', sourceId: nomes[e.item(i).nome], parameterMap: { 0: true } });
             }
             await espera();
-            e.pecas.forEach((p) => {
+            const usada = pecaDoItem(v, i);
+            if (v.troca === 'preview') {
+                const ultimaTroca = chamadas.filter((c) => c.nome === e.nome && c.prop === 'Preview').pop();
+                const antes = i === 0 ? null : pecaDoItem(v, i - 1);
+                confere(antes === usada || i === 0 ? !ultimaTroca || ultimaTroca.value === e.pecas[usada].id : ultimaTroca && ultimaTroca.value === e.pecas[usada].id,
+                    `variante ${v.n}, item ${i}: a tela aponta a peça ${e.pecas[usada].widget}`);
+            }
+            if (v.troca === 'visivel' && (i === 0 || pecaDoItem(v, i - 1) !== usada)) {
+                e.pecas.forEach((p, k) => {
+                    const vis = chamadas.find((c) => c.nome === p.nome && c.prop === 'Visible');
+                    confere(i === 0 || (vis && vis.value === (k === usada ? 1 : 0)), `variante ${v.n}, item ${i}: ${p.widget} ${k === usada ? 'visível' : 'escondida'}`);
+                });
+            }
+            e.pecas.forEach((p, k) => {
+                if (k !== usada) {
+                    confere(!chamadas.some((c) => c.nome === p.nome && c.cell), `variante ${v.n}, item ${i}: ${p.widget} não recebe nada`);
+                    return;
+                }
                 const t = chamadas.find((c) => c.nome === p.nome && c.cell === (p.celTexto || 'Text'));
                 confere(p.texto ? t && t.value.includes(conteudo(v, i).texto) : !t, `variante ${v.n}, item ${i}, ${p.widget}: texto`);
                 if (p.celTitulo) {

@@ -20,7 +20,7 @@ const fs = require('fs');
 const path = require('path');
 const OnlineApp = require('oap-sdk/src/core/OnlineApp.js');
 const logging = require('oap-sdk/src/logging/logging');
-const { ITENS, VARIANTES, ENTRADA, estado, botao, conteudo } = require('./variantes.js');
+const { ITENS, VARIANTES, ENTRADA, estado, botao, conteudo, pecaDoItem } = require('./variantes.js');
 
 const logger = logging.getSDKLogger();
 const PASTA = '/dev/shm/italo_telas_teste';
@@ -72,6 +72,8 @@ class TelasTeste extends OnlineApp {
         this._focoPorId = {};
         this._ultimo = {};
         this._imagens = {};
+        this._estados = {};
+        this._pecaAtual = {};
         this._visivel = false;
         this._saindo = null;
         this.on('initialized', () => this._iniciar().catch((err) => anota(`ERRO no início: ${err && err.message}`)));
@@ -125,6 +127,7 @@ class TelasTeste extends OnlineApp {
             anota(`variante ${v.n} (${v.widget} / ${v.previa}): estado ${st ? 'achado' : 'FALTANDO'}`);
             if (st) {
                 estados.push(st);
+                this._estados[v.n] = st;
                 st.on('visible', (ev) => {
                     const vis = isTrue(ev && ev.visible);
                     anota(`variante ${v.n} ${vis ? 'visível' : 'escondida'}`);
@@ -136,8 +139,10 @@ class TelasTeste extends OnlineApp {
             e.pecas.forEach((p) => this._achar(p.nome));
             ITENS.forEach((it, i) => {
                 const nome = e.item(i).nome;
-                if (this._achar(nome)) {
+                const c = this._achar(nome);
+                if (c) {
                     this._liga(nome, () => anota(`variante ${v.n}: apertou "${it.nome}" (só mostra)`));
+                    c.on('change', (d) => anota(`variante ${v.n}: "${it.nome}" mudou: ${JSON.stringify(d)}`));
                     this._ligaFoco(nome, (foco) => {
                         if (foco) {
                             anota(`variante ${v.n}: foco em "${it.nome}"`);
@@ -228,8 +233,15 @@ class TelasTeste extends OnlineApp {
         const it = ITENS[i];
         const mostra = conteudo(v, i);
         const escritas = [];
-        e.pecas.forEach((p) => {
+        const usada = pecaDoItem(v, i);
+        if (v.troca) {
+            escritas.push(this._trocaPeca(v, usada));
+        }
+        e.pecas.forEach((p, k) => {
             const c = this._comp[p.nome];
+            if (k !== usada) {
+                return;
+            }
             if (!c) {
                 return;
             }
@@ -249,6 +261,27 @@ class TelasTeste extends OnlineApp {
         return Promise.all(escritas)
             .then(() => this.rhmiApplication.flush && this.rhmiApplication.flush())
             .catch((err) => anota(`variante ${v.n}: flush: ${err && err.message}`));
+    }
+
+    /* Mostra a peça k da prévia da variante v: pela propriedade Preview da
+     * tela ou escondendo as outras peças (Visible). Erros anotados. */
+    _trocaPeca(v, k) {
+        if (this._pecaAtual[v.n] === k) {
+            return Promise.resolve();
+        }
+        this._pecaAtual[v.n] = k;
+        const e = estado(v);
+        const p = e.pecas[k];
+        if (v.troca === 'preview') {
+            const st = this._estados[v.n];
+            return st ? Promise.resolve(st.setProperty('Preview', p.id, 'UInt'))
+                .then(() => anota(`variante ${v.n}: prévia -> ${p.widget}`))
+                .catch((err) => anota(`variante ${v.n}: trocar Preview: ${err && err.message}`)) : Promise.resolve();
+        }
+        return Promise.all(e.pecas.map((q, j) => this._comp[q.nome] &&
+            Promise.resolve(this._comp[q.nome].setProperty('Visible', j === k ? 1 : 0, 'UInt'))
+                .catch((err) => anota(`variante ${v.n}: Visible de ${q.widget}: ${err && err.message}`))))
+            .then(() => anota(`variante ${v.n}: visível -> ${p.widget}`));
     }
 
     _abrir(nome) {

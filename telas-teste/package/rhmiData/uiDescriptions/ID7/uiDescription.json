@@ -61,7 +61,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 1: 1Graphic_1TextBottom / desenho baixo",
+                "value": "Variante 1: menu (2Row, troca por preview) / 1Text + 1Graphic_1TextBottom / desenho baixo",
                 "type": "Text"
               }
             }
@@ -83,7 +83,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 2: 1Text / sem desenho / dica longa",
+                "value": "Variante 2: menu (2Row, troca por visivel) / 1Text + 1Graphic_1TextBottom / desenho baixo",
                 "type": "Text"
               }
             }
@@ -105,7 +105,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 3: Speller_6Row_1TextDyn / sem desenho / dica longa",
+                "value": "Variante 3: menu (2Row) / 1Graphic_1TextBottom / desenho baixo",
                 "type": "Text"
               }
             }
@@ -127,51 +127,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 4: 1Graphic_2Text2Row / desenho regua",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "55": {
-          "type": "button",
-          "name": "telasAbre5",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Variante 5: 1Graphic_2Text2Row / desenho baixo / dica longa",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "56": {
-          "type": "button",
-          "name": "telasAbre6",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Variante 6: 1Graphic_1TextTop_1TextBottom / desenho regua / dica longa",
+                "value": "Variante 4: menu (1Row_2Col3070, troca por preview) / 1Text + 1Graphic_1TextBottom / desenho baixo",
                 "type": "Text"
               }
             }
@@ -212,7 +168,7 @@
           ]
         },
         "1101": {
-          "type": "button",
+          "type": "dropDownMenu",
           "name": "telasV1Item0",
           "properties": {
             "Visible": {
@@ -224,17 +180,45 @@
               "type": "UInt"
             }
           },
+          "cells": {
+            "HeaderText": {
+              "value": "Mostrar em",
+              "type": "Text"
+            },
+            "SelectedItem": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
           "rows": [
             {
-              "Text": {
-                "value": "Mostrar em",
+              "ItemText": {
+                "value": "Painel de instrumentos",
+                "type": "Text"
+              }
+            },
+            {
+              "ItemText": {
+                "value": "HUD",
+                "type": "Text"
+              }
+            },
+            {
+              "ItemText": {
+                "value": "Painel e HUD",
+                "type": "Text"
+              }
+            },
+            {
+              "ItemText": {
+                "value": "Nenhum",
                 "type": "Text"
               }
             }
           ]
         },
         "1102": {
-          "type": "button",
+          "type": "checkBox",
           "name": "telasV1Item1",
           "properties": {
             "Visible": {
@@ -251,12 +235,16 @@
               "Text": {
                 "value": "Ocultar a caixa de seta da BMW",
                 "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
               }
             }
           ]
         },
         "1103": {
-          "type": "button",
+          "type": "checkBox",
           "name": "telasV1Item2",
           "properties": {
             "Visible": {
@@ -273,12 +261,16 @@
               "Text": {
                 "value": "CarPlay: Patch",
                 "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
               }
             }
           ]
         },
         "1104": {
-          "type": "button",
+          "type": "checkBox",
           "name": "telasV1Item3",
           "properties": {
             "Visible": {
@@ -295,6 +287,10 @@
               "Text": {
                 "value": "Android Auto",
                 "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
               }
             }
           ]
@@ -315,7 +311,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Logs",
+                "value": "Salvar logs",
                 "type": "Text"
               }
             }
@@ -324,6 +320,10 @@
         "1120": {
           "type": "preview",
           "name": "telasV1Peca0"
+        },
+        "1121": {
+          "type": "preview",
+          "name": "telasV1Peca1"
         }
       }
     },
@@ -360,7 +360,7 @@
           ]
         },
         "1201": {
-          "type": "button",
+          "type": "dropDownMenu",
           "name": "telasV2Item0",
           "properties": {
             "Visible": {
@@ -372,17 +372,45 @@
               "type": "UInt"
             }
           },
+          "cells": {
+            "HeaderText": {
+              "value": "Mostrar em",
+              "type": "Text"
+            },
+            "SelectedItem": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
           "rows": [
             {
-              "Text": {
-                "value": "Mostrar em",
+              "ItemText": {
+                "value": "Painel de instrumentos",
+                "type": "Text"
+              }
+            },
+            {
+              "ItemText": {
+                "value": "HUD",
+                "type": "Text"
+              }
+            },
+            {
+              "ItemText": {
+                "value": "Painel e HUD",
+                "type": "Text"
+              }
+            },
+            {
+              "ItemText": {
+                "value": "Nenhum",
                 "type": "Text"
               }
             }
           ]
         },
         "1202": {
-          "type": "button",
+          "type": "checkBox",
           "name": "telasV2Item1",
           "properties": {
             "Visible": {
@@ -399,12 +427,16 @@
               "Text": {
                 "value": "Ocultar a caixa de seta da BMW",
                 "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
               }
             }
           ]
         },
         "1203": {
-          "type": "button",
+          "type": "checkBox",
           "name": "telasV2Item2",
           "properties": {
             "Visible": {
@@ -421,12 +453,16 @@
               "Text": {
                 "value": "CarPlay: Patch",
                 "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
               }
             }
           ]
         },
         "1204": {
-          "type": "button",
+          "type": "checkBox",
           "name": "telasV2Item3",
           "properties": {
             "Visible": {
@@ -443,6 +479,10 @@
               "Text": {
                 "value": "Android Auto",
                 "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
               }
             }
           ]
@@ -463,7 +503,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Logs",
+                "value": "Salvar logs",
                 "type": "Text"
               }
             }
@@ -472,6 +512,10 @@
         "1220": {
           "type": "preview",
           "name": "telasV2Peca0"
+        },
+        "1221": {
+          "type": "preview",
+          "name": "telasV2Peca1"
         }
       }
     },
@@ -508,7 +552,7 @@
           ]
         },
         "1301": {
-          "type": "button",
+          "type": "dropDownMenu",
           "name": "telasV3Item0",
           "properties": {
             "Visible": {
@@ -520,17 +564,45 @@
               "type": "UInt"
             }
           },
+          "cells": {
+            "HeaderText": {
+              "value": "Mostrar em",
+              "type": "Text"
+            },
+            "SelectedItem": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
           "rows": [
             {
-              "Text": {
-                "value": "Mostrar em",
+              "ItemText": {
+                "value": "Painel de instrumentos",
+                "type": "Text"
+              }
+            },
+            {
+              "ItemText": {
+                "value": "HUD",
+                "type": "Text"
+              }
+            },
+            {
+              "ItemText": {
+                "value": "Painel e HUD",
+                "type": "Text"
+              }
+            },
+            {
+              "ItemText": {
+                "value": "Nenhum",
                 "type": "Text"
               }
             }
           ]
         },
         "1302": {
-          "type": "button",
+          "type": "checkBox",
           "name": "telasV3Item1",
           "properties": {
             "Visible": {
@@ -547,12 +619,16 @@
               "Text": {
                 "value": "Ocultar a caixa de seta da BMW",
                 "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
               }
             }
           ]
         },
         "1303": {
-          "type": "button",
+          "type": "checkBox",
           "name": "telasV3Item2",
           "properties": {
             "Visible": {
@@ -569,12 +645,16 @@
               "Text": {
                 "value": "CarPlay: Patch",
                 "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
               }
             }
           ]
         },
         "1304": {
-          "type": "button",
+          "type": "checkBox",
           "name": "telasV3Item3",
           "properties": {
             "Visible": {
@@ -591,6 +671,10 @@
               "Text": {
                 "value": "Android Auto",
                 "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
               }
             }
           ]
@@ -611,7 +695,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Logs",
+                "value": "Salvar logs",
                 "type": "Text"
               }
             }
@@ -656,7 +740,7 @@
           ]
         },
         "1401": {
-          "type": "button",
+          "type": "dropDownMenu",
           "name": "telasV4Item0",
           "properties": {
             "Visible": {
@@ -668,17 +752,45 @@
               "type": "UInt"
             }
           },
+          "cells": {
+            "HeaderText": {
+              "value": "Mostrar em",
+              "type": "Text"
+            },
+            "SelectedItem": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
           "rows": [
             {
-              "Text": {
-                "value": "Mostrar em",
+              "ItemText": {
+                "value": "Painel de instrumentos",
+                "type": "Text"
+              }
+            },
+            {
+              "ItemText": {
+                "value": "HUD",
+                "type": "Text"
+              }
+            },
+            {
+              "ItemText": {
+                "value": "Painel e HUD",
+                "type": "Text"
+              }
+            },
+            {
+              "ItemText": {
+                "value": "Nenhum",
                 "type": "Text"
               }
             }
           ]
         },
         "1402": {
-          "type": "button",
+          "type": "checkBox",
           "name": "telasV4Item1",
           "properties": {
             "Visible": {
@@ -695,12 +807,16 @@
               "Text": {
                 "value": "Ocultar a caixa de seta da BMW",
                 "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
               }
             }
           ]
         },
         "1403": {
-          "type": "button",
+          "type": "checkBox",
           "name": "telasV4Item2",
           "properties": {
             "Visible": {
@@ -717,12 +833,16 @@
               "Text": {
                 "value": "CarPlay: Patch",
                 "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
               }
             }
           ]
         },
         "1404": {
-          "type": "button",
+          "type": "checkBox",
           "name": "telasV4Item3",
           "properties": {
             "Visible": {
@@ -739,6 +859,10 @@
               "Text": {
                 "value": "Android Auto",
                 "type": "Text"
+              },
+              "eParam_RowSelected": {
+                "value": false,
+                "type": "Bool"
               }
             }
           ]
@@ -759,7 +883,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Logs",
+                "value": "Salvar logs",
                 "type": "Text"
               }
             }
@@ -768,302 +892,10 @@
         "1420": {
           "type": "preview",
           "name": "telasV4Peca0"
-        }
-      }
-    },
-    "15": {
-      "type": "state",
-      "name": "ST_ItaloTelas_V5",
-      "properties": {
-        "ParentState": {
-          "value": 1,
-          "type": "UInt"
         },
-        "Preview": {
-          "value": 1520,
-          "type": "UInt"
-        }
-      },
-      "components": {
-        "1500": {
-          "type": "title",
-          "name": "ST_ItaloTelas_V5_Title",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "SID_TELAS_TITLE",
-                "type": "StringId"
-              }
-            }
-          ]
-        },
-        "1501": {
-          "type": "button",
-          "name": "telasV5Item0",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Mostrar em",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "1502": {
-          "type": "button",
-          "name": "telasV5Item1",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Ocultar a caixa de seta da BMW",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "1503": {
-          "type": "button",
-          "name": "telasV5Item2",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "CarPlay: Patch",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "1504": {
-          "type": "button",
-          "name": "telasV5Item3",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Android Auto",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "1505": {
-          "type": "button",
-          "name": "telasV5Item4",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Logs",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "1520": {
+        "1421": {
           "type": "preview",
-          "name": "telasV5Peca0"
-        }
-      }
-    },
-    "16": {
-      "type": "state",
-      "name": "ST_ItaloTelas_V6",
-      "properties": {
-        "ParentState": {
-          "value": 1,
-          "type": "UInt"
-        },
-        "Preview": {
-          "value": 1620,
-          "type": "UInt"
-        }
-      },
-      "components": {
-        "1600": {
-          "type": "title",
-          "name": "ST_ItaloTelas_V6_Title",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "SID_TELAS_TITLE",
-                "type": "StringId"
-              }
-            }
-          ]
-        },
-        "1601": {
-          "type": "button",
-          "name": "telasV6Item0",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Mostrar em",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "1602": {
-          "type": "button",
-          "name": "telasV6Item1",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Ocultar a caixa de seta da BMW",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "1603": {
-          "type": "button",
-          "name": "telasV6Item2",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "CarPlay: Patch",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "1604": {
-          "type": "button",
-          "name": "telasV6Item3",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Android Auto",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "1605": {
-          "type": "button",
-          "name": "telasV6Item4",
-          "properties": {
-            "Visible": {
-              "value": 1,
-              "type": "UInt"
-            },
-            "Focusable": {
-              "value": 3,
-              "type": "UInt"
-            }
-          },
-          "rows": [
-            {
-              "Text": {
-                "value": "Logs",
-                "type": "Text"
-              }
-            }
-          ]
-        },
-        "1620": {
-          "type": "preview",
-          "name": "telasV6Peca0"
+          "name": "telasV4Peca1"
         }
       }
     }

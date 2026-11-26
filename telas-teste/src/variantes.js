@@ -14,6 +14,9 @@
 const ITENS = [
     {
         nome: 'Mostrar em',
+        tipo: 'lista',
+        opcoes: ['Painel de instrumentos', 'HUD', 'Painel e HUD', 'Nenhum'],
+        previa: 'texto',
         dica: 'Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD, nos dois ou em nenhum.',
         longa: 'Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum. No painel, o mapa ocupa o lugar do da BMW enquanto a navegação do celular está ativa; no HUD, aparece a seta da próxima manobra. Para voltar ao normal, escolha Nenhum.',
         curta: 'Onde o mapa do celular aparece: painel, HUD, os dois ou nenhum.',
@@ -21,6 +24,8 @@ const ITENS = [
     },
     {
         nome: 'Ocultar a caixa de seta da BMW',
+        tipo: 'marca',
+        previa: 'desenho',
         dica: 'Esconde a seta de manobra da BMW enquanto o nosso mapa está no painel, para não aparecer em dobro.',
         longa: 'Esconde o quadro de manobra da navegação da BMW enquanto o nosso mapa está no painel, para a seta não aparecer em dobro. Quando o nosso mapa sai do painel, o quadro da BMW volta sozinho. Desligue se você prefere ver as duas setas ao mesmo tempo.',
         curta: 'Esconde a seta da BMW enquanto o nosso mapa está no painel.',
@@ -28,6 +33,8 @@ const ITENS = [
     },
     {
         nome: 'CarPlay: Patch',
+        tipo: 'marca',
+        previa: 'desenho',
         dica: 'Libera o mapa do CarPlay no painel, para Google Maps e Waze. O Apple Maps tem o seu próprio mapa no painel.',
         longa: 'Libera o mapa do CarPlay no painel, para Google Maps e Waze. O Apple Maps já tem o seu próprio mapa no painel e não precisa disto. O patch muda o programa do CarPlay na central; para desfazer, desligue aqui e reinicie a central pelo app ou pela Loja.',
         curta: 'Mapa do CarPlay no painel, para Google Maps e Waze.',
@@ -35,13 +42,17 @@ const ITENS = [
     },
     {
         nome: 'Android Auto',
+        tipo: 'marca',
+        previa: 'desenho',
         dica: 'O mesmo para o Android Auto: o patch põe o mapa no painel, e o zoom muda a escala.',
         longa: 'O mesmo para o Android Auto: o patch põe o mapa do celular no painel, e o zoom muda a escala do mapa. Funciona com Google Maps e Waze. Para desfazer, desligue aqui e reinicie a central pelo app ou pela Loja.',
         curta: 'O mesmo para o Android Auto, com zoom.',
         imagem: 'celular'
     },
     {
-        nome: 'Logs',
+        nome: 'Salvar logs',
+        tipo: 'botao',
+        previa: 'desenho',
         dica: '"Salvar logs" guarda os últimos minutos. Toque logo depois de um problema; ele chega em casa sozinho.',
         longa: '"Salvar logs" guarda o que já aconteceu nos últimos minutos. Toque logo depois de um problema: os registros ficam no carro e chegam em casa sozinhos, pela internet do carro. Nada é enviado para outro lugar.',
         curta: 'Guarda os últimos minutos. Toque logo depois de um problema.',
@@ -70,29 +81,42 @@ const PECAS = {
 };
 
 /* Cada variante: a tela, o grupo da prévia (ContentPreview, como no x_call),
- * a peça, os desenhos e a dica. A 0.0.5 mostrou que a 1Graphic_1TextBottom
- * com desenho de 957×639 fica como nas configurações da BMW, mas o texto
- * tem no máximo 3 linhas (o resto é cortado). A 0.0.6 confere as dicas
- * encurtadas (tools/cabe.js) e procura peças com mais texto:
+ * as peças, os desenhos e a dica. Até a 0.0.6 os itens eram botões simples;
+ * a 0.0.7 monta o menu como os da BMW (Attention Assist, modo manobrista):
+ * "Mostrar em" é uma lista de opções (dropDownMenu, como no Mapas no painel)
+ * e o resto são caixas de marcar e um botão. Sem texto no topo da lista: a
+ * explicação fica toda à direita, só texto (1Text, até ~10 linhas) para o
+ * "Mostrar em" e desenho com 3 linhas (1Graphic_1TextBottom) para os outros.
+ *   menu: a peça da lista de opções;
+ *   troca: como a prévia muda de peça entre os itens ('preview': a tela
+ *     aponta outra peça pela propriedade Preview; 'visivel': as duas peças
+ *     ficam no grupo e uma é escondida); sem troca, uma peça só.
  *   imagens: '' o desenho pequeno; 'baixo' / 'cima' 957×639 com a faixa do
- *   texto livre embaixo / em cima; 'regua' a régua, para medir a área.
- *   dica: '' a dica (até 3 linhas); 'curta'; 'longa' (6 a 8 linhas). */
+ *   texto livre embaixo / em cima; 'regua' a régua.
+ *   dica: '' a dica (até 3 linhas); 'curta'; 'longa'. Nas variantes com
+ *   menu, cada item usa a longa se a prévia dele é só texto. */
 const REGULAR = 'LT_State_Regular_ContentHidden';
 const VARIANTES = [
-    { n: 1, widget: REGULAR, previa: 'ContentPreview', pecas: ['baixo'], imagens: 'baixo' },
-    { n: 2, widget: REGULAR, previa: 'ContentPreview', pecas: ['soTexto'], imagens: '', dica: 'longa' },
-    { n: 3, widget: REGULAR, previa: 'ContentPreview', pecas: ['seisLinhas'], imagens: '', dica: 'longa' },
-    { n: 4, widget: REGULAR, previa: 'ContentPreview', pecas: ['tituloTexto'], imagens: 'regua' },
-    { n: 5, widget: REGULAR, previa: 'ContentPreview', pecas: ['tituloTexto'], imagens: 'baixo', dica: 'longa' },
-    { n: 6, widget: REGULAR, previa: 'ContentPreview', pecas: ['cimaBaixo'], imagens: 'regua', dica: 'longa' }
+    { n: 1, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_DropDownMenu_2Row', pecas: ['soTexto', 'baixo'], troca: 'preview', imagens: 'baixo' },
+    { n: 2, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_DropDownMenu_2Row', pecas: ['soTexto', 'baixo'], troca: 'visivel', imagens: 'baixo' },
+    { n: 3, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_DropDownMenu_2Row', pecas: ['baixo'], imagens: 'baixo' },
+    { n: 4, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_DropDownMenu_1Row_2Col3070', pecas: ['soTexto', 'baixo'], troca: 'preview', imagens: 'baixo' }
 ];
+
+/* A peça da prévia que mostra o item i na variante v (o índice em pecas). */
+const pecaDoItem = (v, i) => {
+    if (!v.troca) {
+        return 0;
+    }
+    return ITENS[i].previa === 'texto' ? v.pecas.indexOf('soTexto') : v.pecas.indexOf('baixo');
+};
 
 /* O que a variante v mostra para o item i: o texto e o nome do desenho. */
 const conteudo = (v, i) => {
     const it = ITENS[i];
     return {
         titulo: it.nome,
-        texto: v.dica ? it[v.dica] : it.dica,
+        texto: v.dica ? it[v.dica] : (v.troca && it.previa === 'texto' ? it.longa : it.dica),
         imagem: v.imagens === 'regua' ? 'regua' : (v.imagens ? `${it.imagem}-${v.imagens}` : it.imagem)
     };
 };
@@ -111,4 +135,4 @@ const estado = (v) => ({
 const botao = (v) => ({ id: 50 + v.n, nome: `telasAbre${v.n}` });
 const INFO = { id: 40, nome: 'telasInfo' };
 
-module.exports = { ITENS, PECAS, VARIANTES, ENTRADA, estado, botao, INFO, conteudo };
+module.exports = { ITENS, PECAS, VARIANTES, ENTRADA, estado, botao, INFO, conteudo, pecaDoItem };

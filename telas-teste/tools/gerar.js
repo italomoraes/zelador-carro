@@ -34,14 +34,24 @@ function estados() {
                 celulas: { Text: 'Cada botão abre uma versão da tela de dicas. Gire o botão sobre os itens e veja se a explicação aparece.' } }
         ].concat(VARIANTES.map((v) => ({
             id: botao(v).id, nome: botao(v).nome, tipo: 'button', widget: 'LT_Button_1Row', foco: 3,
-            celulas: { Text: `Variante ${v.n}: ${estado(v).pecas.map((p) => p.widget.replace(/^LT_(Label|PreviewTable)_/, '')).join(' + ')}${!estado(v).pecas.some((p) => p.desenho) ? ' / sem desenho' : v.imagens ? ` / desenho ${v.imagens}` : ' / desenho pequeno'}${v.dica ? ` / dica ${v.dica}` : ''}` }
+            celulas: { Text: `Variante ${v.n}: ${v.menu ? `menu (${v.menu.replace('LT_DropDownMenu_', '')}${v.troca ? `, troca por ${v.troca}` : ''}) / ` : ''}${estado(v).pecas.map((p) => p.widget.replace(/^LT_(Label|PreviewTable)_/, '')).join(' + ')}${!estado(v).pecas.some((p) => p.desenho) ? ' / sem desenho' : v.imagens ? ` / desenho ${v.imagens}` : ' / desenho pequeno'}${v.dica ? ` / dica ${v.dica}` : ''}` }
         }))) }]
     };
     const variantes = VARIANTES.map((v) => {
         const e = estado(v);
-        const itens = ITENS.map((it, i) => ({
-            id: e.item(i).id, nome: e.item(i).nome, tipo: 'button', widget: 'LT_Button_1Row', foco: 3, celulas: { Text: it.nome }
-        }));
+        const itens = ITENS.map((it, i) => {
+            const base = { id: e.item(i).id, nome: e.item(i).nome, foco: 3 };
+            if (v.menu && it.tipo === 'lista') {
+                return Object.assign(base, { tipo: 'dropDownMenu', widget: v.menu,
+                    cels: { HeaderText: { value: it.nome, type: 'Text' }, SelectedItem: { value: 0, type: 'UInt' } },
+                    linhas: it.opcoes.map((o) => ({ ItemText: { value: o, type: 'Text' } })) });
+            }
+            if (v.menu && it.tipo === 'marca') {
+                return Object.assign(base, { tipo: 'checkBox', widget: 'LT_CheckBox_1Row',
+                    linhas: [{ Text: { value: it.nome, type: 'Text' }, eParam_RowSelected: { value: false, type: 'Bool' } }] });
+            }
+            return Object.assign(base, { tipo: 'button', widget: 'LT_Button_1Row', celulas: { Text: it.nome } });
+        });
         const pecas = e.pecas.map((p) => p.componente === 'preview' ?
             { id: p.id, nome: p.nome, tipo: 'preview', widget: p.widget, simples: true, celulas: {} } :
             { id: p.id, nome: p.nome, tipo: 'label', widget: p.widget, foco: 0, celulas: p.texto ? { Text: ITENS[0].dica } : {} });
@@ -104,16 +114,15 @@ function uiDescription() {
         };
         s.grupos.forEach((g) => g.componentes.forEach((c) => {
             const cells = {};
-            Object.keys(c.celulas).forEach((k) => { cells[k] = { value: c.celulas[k], type: 'Text' }; });
+            Object.keys(c.celulas || {}).forEach((k) => { cells[k] = { value: c.celulas[k], type: 'Text' }; });
             if (c.simples) {
                 components[c.id] = { type: c.tipo, name: c.nome };
                 return;
             }
-            components[c.id] = {
+            components[c.id] = Object.assign({
                 type: c.tipo, name: c.nome,
-                properties: { Visible: { value: 1, type: 'UInt' }, Focusable: { value: c.foco, type: 'UInt' } },
-                rows: [cells]
-            };
+                properties: { Visible: { value: 1, type: 'UInt' }, Focusable: { value: c.foco, type: 'UInt' } }
+            }, c.cels ? { cells: c.cels } : {}, { rows: c.linhas || [cells] });
         }));
         const props = {};
         if (s.pai) {
