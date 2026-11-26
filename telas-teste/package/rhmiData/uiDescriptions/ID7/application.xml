@@ -49,10 +49,6 @@
                 <property id="2" value="1"/>
                 <property id="3" value="3"/>
             </component>
-            <component id="60" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
         </layoutGroup>
     </container>
     <container id="11" type="state" widget="LT_State_Regular_ContentHidden">
@@ -85,17 +81,9 @@
                 <property id="3" value="3"/>
             </component>
         </layoutGroup>
-        <layoutGroup id="311" name="ContentPreview">
+        <layoutGroup id="311" name="PreviewMap">
             <property id="3" value="1"/>
             <component id="1120" type="label" widget="LT_Label_1TextDyn_Preview">
-                <property id="2" value="1"/>
-                <property id="3" value="0"/>
-            </component>
-            <component id="1121" type="label" widget="LT_Label_BON_Preview_1Graphic_1Text">
-                <property id="2" value="1"/>
-                <property id="3" value="0"/>
-            </component>
-            <component id="1122" type="label" widget="LT_Label_1Graphic_Scalable">
                 <property id="2" value="1"/>
                 <property id="3" value="0"/>
             </component>
@@ -131,17 +119,9 @@
                 <property id="3" value="3"/>
             </component>
         </layoutGroup>
-        <layoutGroup id="312" name="Content">
+        <layoutGroup id="312" name="PreviewMap">
             <property id="3" value="1"/>
-            <component id="1220" type="label" widget="LT_Label_1TextDyn_Preview">
-                <property id="2" value="1"/>
-                <property id="3" value="0"/>
-            </component>
-            <component id="1221" type="label" widget="LT_Label_BON_Preview_1Graphic_1Text">
-                <property id="2" value="1"/>
-                <property id="3" value="0"/>
-            </component>
-            <component id="1222" type="label" widget="LT_Label_1Graphic_Scalable">
+            <component id="1220" type="label" widget="LT_Label_BON_Preview_1Graphic_1Text">
                 <property id="2" value="1"/>
                 <property id="3" value="0"/>
             </component>
@@ -177,17 +157,9 @@
                 <property id="3" value="3"/>
             </component>
         </layoutGroup>
-        <layoutGroup id="313" name="ListStatic">
+        <layoutGroup id="313" name="PreviewMap">
             <property id="3" value="1"/>
-            <component id="1320" type="label" widget="LT_Label_1TextDyn_Preview">
-                <property id="2" value="1"/>
-                <property id="3" value="0"/>
-            </component>
-            <component id="1321" type="label" widget="LT_Label_BON_Preview_1Graphic_1Text">
-                <property id="2" value="1"/>
-                <property id="3" value="0"/>
-            </component>
-            <component id="1322" type="label" widget="LT_Label_1Graphic_Scalable">
+            <component id="1320" type="label" widget="LT_Label_1Graphic_Scalable">
                 <property id="2" value="1"/>
                 <property id="3" value="0"/>
             </component>
@@ -223,17 +195,13 @@
                 <property id="3" value="3"/>
             </component>
         </layoutGroup>
-        <layoutGroup id="314" name="Table">
+        <layoutGroup id="314" name="PreviewMap">
             <property id="3" value="1"/>
-            <component id="1420" type="label" widget="LT_Label_1TextDyn_Preview">
+            <component id="1420" type="label" widget="LT_Label_1FadingGraphic">
                 <property id="2" value="1"/>
                 <property id="3" value="0"/>
             </component>
-            <component id="1421" type="label" widget="LT_Label_BON_Preview_1Graphic_1Text">
-                <property id="2" value="1"/>
-                <property id="3" value="0"/>
-            </component>
-            <component id="1422" type="label" widget="LT_Label_1Graphic_Scalable">
+            <component id="1421" type="label" widget="LT_Label_4Row_1TextDyn">
                 <property id="2" value="1"/>
                 <property id="3" value="0"/>
             </component>
@@ -271,15 +239,11 @@
         </layoutGroup>
         <layoutGroup id="315" name="PreviewMap">
             <property id="3" value="1"/>
-            <component id="1520" type="label" widget="LT_Label_1TextDyn_Preview">
+            <component id="1520" type="label" widget="LT_Label_1Graphic_Scalable">
                 <property id="2" value="1"/>
                 <property id="3" value="0"/>
             </component>
-            <component id="1521" type="label" widget="LT_Label_BON_Preview_1Graphic_1Text">
-                <property id="2" value="1"/>
-                <property id="3" value="0"/>
-            </component>
-            <component id="1522" type="label" widget="LT_Label_1Graphic_Scalable">
+            <component id="1521" type="label" widget="LT_Label_5Row_1TextDyn_FixHeight">
                 <property id="2" value="1"/>
                 <property id="3" value="0"/>
             </component>
@@ -315,17 +279,13 @@
                 <property id="3" value="3"/>
             </component>
         </layoutGroup>
-        <layoutGroup id="316" name="MainGroup">
+        <layoutGroup id="316" name="PreviewMap">
             <property id="3" value="1"/>
-            <component id="1620" type="label" widget="LT_Label_1TextDyn_Preview">
+            <component id="1620" type="label" widget="LT_Label_1Graphic">
                 <property id="2" value="1"/>
                 <property id="3" value="0"/>
             </component>
-            <component id="1621" type="label" widget="LT_Label_BON_Preview_1Graphic_1Text">
-                <property id="2" value="1"/>
-                <property id="3" value="0"/>
-            </component>
-            <component id="1622" type="label" widget="LT_Label_1Graphic_Scalable">
+            <component id="1621" type="label" widget="LT_Label_6Row_1TextDyn">
                 <property id="2" value="1"/>
                 <property id="3" value="0"/>
             </component>
@@ -360,15 +320,10 @@
                 <property id="2" value="1"/>
                 <property id="3" value="3"/>
             </component>
-            <component id="1720" type="label" widget="LT_Label_1TextDyn_Preview">
-                <property id="2" value="1"/>
-                <property id="3" value="0"/>
-            </component>
-            <component id="1721" type="label" widget="LT_Label_BON_Preview_1Graphic_1Text">
-                <property id="2" value="1"/>
-                <property id="3" value="0"/>
-            </component>
-            <component id="1722" type="label" widget="LT_Label_1Graphic_Scalable">
+        </layoutGroup>
+        <layoutGroup id="317" name="PreviewMap">
+            <property id="3" value="1"/>
+            <component id="1720" type="label" widget="LT_Label_1Text_PreviewTable">
                 <property id="2" value="1"/>
                 <property id="3" value="0"/>
             </component>
@@ -404,7 +359,7 @@
                 <property id="3" value="3"/>
             </component>
         </layoutGroup>
-        <layoutGroup id="318" name="ContentPreview">
+        <layoutGroup id="318" name="PreviewMap">
             <property id="3" value="1"/>
             <component id="1820" type="label" widget="LT_Label_1TextDyn_Preview">
                 <property id="2" value="1"/>
@@ -420,7 +375,7 @@
             </component>
         </layoutGroup>
     </container>
-    <container id="19" type="state" widget="LT_State_Wide_1List_Static_Preview">
+    <container id="19" type="state" widget="LT_State_Regular_ContentHidden">
         <property id="9" value="1"/>
         <layoutGroup id="138" name="Titlebar">
             <component id="1900" type="title">
@@ -450,7 +405,7 @@
                 <property id="3" value="3"/>
             </component>
         </layoutGroup>
-        <layoutGroup id="319" name="ListStatic">
+        <layoutGroup id="319" name="PreviewMap">
             <property id="3" value="1"/>
             <component id="1920" type="label" widget="LT_Label_1TextDyn_Preview">
                 <property id="2" value="1"/>
@@ -461,45 +416,6 @@
                 <property id="3" value="0"/>
             </component>
             <component id="1922" type="label" widget="LT_Label_1Graphic_Scalable">
-                <property id="2" value="1"/>
-                <property id="3" value="0"/>
-            </component>
-        </layoutGroup>
-    </container>
-    <container id="20" type="state" widget="LT_State_Wide">
-        <property id="9" value="1"/>
-        <layoutGroup id="140" name="Titlebar">
-            <component id="2000" type="title">
-                <property id="2" value="1"/>
-            </component>
-        </layoutGroup>
-        <layoutGroup id="141" name="List">
-            <property id="3" value="1"/>
-            <component id="2001" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="2002" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="2003" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="2004" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="2005" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="2020" type="label" widget="LT_Label_4Row_1TextDyn">
-                <property id="2" value="1"/>
-                <property id="3" value="0"/>
-            </component>
-            <component id="2021" type="label" widget="LT_Label_1Graphic_Scalable">
                 <property id="2" value="1"/>
                 <property id="3" value="0"/>
             </component>

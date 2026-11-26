@@ -34,7 +34,7 @@ function estados() {
                 celulas: { Text: 'Cada botão abre uma versão da tela de dicas. Gire o botão sobre os itens e veja se a explicação aparece.' } }
         ].concat(VARIANTES.map((v) => ({
             id: botao(v).id, nome: botao(v).nome, tipo: 'button', widget: 'LT_Button_1Row', foco: 3,
-            celulas: { Text: `Variante ${v.n}: ${v.widget.replace('LT_State_', '')} / ${v.previa === 'List' ? 'na lista' : v.previa}` }
+            celulas: { Text: `Variante ${v.n}: ${v.widget.replace('LT_State_', '')} / ${estado(v).pecas.map((p) => p.widget.replace('LT_Label_', '')).join(' + ')}` }
         }))) }]
     };
     const variantes = VARIANTES.map((v) => {

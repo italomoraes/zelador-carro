@@ -17,15 +17,25 @@ uma faixa vazia à direita; `LT_State_Regular_ContentHidden_PreviewLeft` põe a
 lista à direita. Um label comum nos grupos `ContentPreview` e `Content` não
 apareceu, e os desenhos falharam por não estarem registrados na interface.
 
-**0.0.2:** as peças de prévia da interface (`LT_Label_1TextDyn_Preview`,
-`LT_Label_BON_Preview_1Graphic_1Text` e `LT_Label_1Graphic_Scalable`, com o
-desenho registrado antes) em outros grupos:
+**0.0.2 (26/11):** as peças de prévia da interface em vários grupos. Só o
+grupo `PreviewMap`, na `LT_State_Regular_ContentHidden`, desenhou à direita:
+o desenho do item no alto e uma linha de texto embaixo, cortada. Os outros
+grupos deixaram a direita vazia.
 
-| Variante | Tela | Grupo das peças |
+**0.0.3:** tudo no `PreviewMap`, com uma peça ou par por variante, para saber
+qual peça desenha o quê e achar texto em várias linhas e o desenho com fade:
+
+| Variante | Tela | Peças |
 |---|---|---|
-| 1 a 7 | `LT_State_Regular_ContentHidden` | `ContentPreview`, `Content`, `ListStatic`, `Table`, `PreviewMap`, `MainGroup` e, na 7, a própria lista |
-| 8 e 9 | `LT_State_Wide_1List_Static_Preview` | `ContentPreview` e `ListStatic` |
-| 10 | `LT_State_Wide` (a tela de hoje) | a própria lista: explicação e desenho embaixo dos itens |
+| 1 | `Regular_ContentHidden` | `LT_Label_1TextDyn_Preview` |
+| 2 | `Regular_ContentHidden` | `LT_Label_BON_Preview_1Graphic_1Text` |
+| 3 | `Regular_ContentHidden` | `LT_Label_1Graphic_Scalable` |
+| 4 | `Regular_ContentHidden` | `LT_Label_1FadingGraphic` + `LT_Label_4Row_1TextDyn` |
+| 5 | `Regular_ContentHidden` | `LT_Label_1Graphic_Scalable` + `LT_Label_5Row_1TextDyn_FixHeight` |
+| 6 | `Regular_ContentHidden` | `LT_Label_1Graphic` + `LT_Label_6Row_1TextDyn` |
+| 7 | `Regular_ContentHidden` | `LT_Label_1Text_PreviewTable` |
+| 8 | `Wide_1List_Static_Preview` | as três peças da 0.0.2 |
+| 9 | `Regular_ContentHidden` | as três peças da 0.0.2 (a referência) |
 
 Os itens são os do Mapas no painel, com dicas de exemplo. Apertar um item
 não faz nada: o app só mostra.
