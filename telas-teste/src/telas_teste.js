@@ -233,11 +233,11 @@ class TelasTeste extends OnlineApp {
                 return;
             }
             if (p.texto) {
-                escritas.push(Promise.resolve(c.setValue(0, 'Text', v.previa === 'List' && !p.desenho ? `${it.nome}: ${it.dica}` : it.dica, 'Text'))
+                escritas.push(Promise.resolve(c.setValue(0, p.celTexto || 'Text', v.previa === 'List' && !p.desenho ? `${it.nome}: ${it.dica}` : it.dica, 'Text'))
                     .catch((err) => anota(`variante ${v.n}: ${p.widget} texto: ${err && err.message}`)));
             }
             if (p.desenho && this._imagensProntas && this._imagens[it.imagem]) {
-                escritas.push(Promise.resolve(c.setValue(0, 'Graphic', this._imagens[it.imagem], 'ResourceId'))
+                escritas.push(Promise.resolve(c.setValue(0, p.celDesenho || 'Graphic', this._imagens[it.imagem], 'ResourceId'))
                     .catch((err) => anota(`variante ${v.n}: ${p.widget} desenho: ${err && err.message}`)));
             }
         });

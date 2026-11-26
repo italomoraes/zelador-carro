@@ -39,7 +39,11 @@ VARIANTES.forEach((v) => {
     const e = estado(v);
     confere(xml.includes(`<container id="${e.id}" type="state" widget="${v.widget}">`), `variante ${v.n} com a tela ${v.widget}`);
     confere(xml.includes(`name="${v.previa}"`), `variante ${v.n} com o grupo ${v.previa}`);
-    e.pecas.forEach((p) => confere(xml.includes(`<component id="${p.id}" type="label" widget="${p.widget}">`), `variante ${v.n}: peça ${p.widget}`));
+    e.pecas.forEach((p) => confere(xml.includes(`<component id="${p.id}" type="${p.componente || 'label'}" widget="${p.widget}"`), `variante ${v.n}: peça ${p.widget}`));
+    const prev = e.pecas.find((p) => p.componente === 'preview');
+    if (prev) {
+        confere(ui.containers[e.id].properties.Preview.value === prev.id && xml.includes(`<property id="4" value="${prev.id}"/>`), `variante ${v.n}: a tela aponta a prévia`);
+    }
 });
 const app = JSON.parse(fs.readFileSync(path.join(PKG, 'rhmiData/application.json'), 'utf8')).application;
 confere(fs.existsSync(path.join(PKG, 'rhmiData/variantGroups/Common/images', app.entryPoints[0].icon)), 'ícone do ponto de entrada existe');
@@ -119,9 +123,9 @@ const espera = () => new Promise((r) => setTimeout(r, 30));
             }
             await espera();
             e.pecas.forEach((p) => {
-                const t = chamadas.find((c) => c.nome === p.nome && c.cell === 'Text');
+                const t = chamadas.find((c) => c.nome === p.nome && c.cell === (p.celTexto || 'Text'));
                 confere(p.texto ? t && t.value.includes(ITENS[i].dica) : !t, `variante ${v.n}, item ${i}, ${p.widget}: texto`);
-                const g = chamadas.find((c) => c.nome === p.nome && c.cell === 'Graphic');
+                const g = chamadas.find((c) => c.nome === p.nome && c.cell === (p.celDesenho || 'Graphic'));
                 confere(p.desenho ? g && g.type === 'ResourceId' && g.value === path.join(tmp, `${ITENS[i].imagem}.png`) : !g,
                     `variante ${v.n}, item ${i}, ${p.widget}: desenho`);
             });

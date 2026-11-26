@@ -22,20 +22,24 @@ grupo `PreviewMap`, na `LT_State_Regular_ContentHidden`, desenhou à direita:
 o desenho do item no alto e uma linha de texto embaixo, cortada. Os outros
 grupos deixaram a direita vazia.
 
-**0.0.3:** tudo no `PreviewMap`, com uma peça ou par por variante, para saber
-qual peça desenha o quê e achar texto em várias linhas e o desenho com fade:
+**0.0.4:** em vez de adivinhar, o caminho que os apps da própria BMW usam
+(o `x_call`, que vem instalado na central). A tela aponta, pela propriedade
+`Preview` (id 4), um componente do tipo `preview` com uma peça
+`LT_PreviewTable_*` no grupo `ContentPreview`. O app escreve a explicação na
+célula `Description` e o desenho na `Illustration`.
 
-| Variante | Tela | Peças |
+| Variante | Tela | Peça |
 |---|---|---|
-| 1 | `Regular_ContentHidden` | `LT_Label_1TextDyn_Preview` |
-| 2 | `Regular_ContentHidden` | `LT_Label_BON_Preview_1Graphic_1Text` |
-| 3 | `Regular_ContentHidden` | `LT_Label_1Graphic_Scalable` |
-| 4 | `Regular_ContentHidden` | `LT_Label_1FadingGraphic` + `LT_Label_4Row_1TextDyn` |
-| 5 | `Regular_ContentHidden` | `LT_Label_1Graphic_Scalable` + `LT_Label_5Row_1TextDyn_FixHeight` |
-| 6 | `Regular_ContentHidden` | `LT_Label_1Graphic` + `LT_Label_6Row_1TextDyn` |
-| 7 | `Regular_ContentHidden` | `LT_Label_1Text_PreviewTable` |
-| 8 | `Wide_1List_Static_Preview` | as três peças da 0.0.2 |
-| 9 | `Regular_ContentHidden` | as três peças da 0.0.2 (a referência) |
+| 1 | `Regular_ContentHidden` | `LT_PreviewTable_Left_1Graphic_1Text_Bottom` (a do `x_call`) |
+| 2 | `Regular_ContentHidden` | `LT_PreviewTable_Left_1Graphic_1Text_Top` |
+| 3 | `Regular_ContentHidden` | `LT_PreviewTable_1Graphic_1TextBottom` |
+| 4 | `Regular_ContentHidden` | `LT_PreviewTable_1Graphic_1Text2Row` |
+| 5 | `Regular_ContentHidden` | `LT_PreviewTable_1Graphic_1Text3Row` |
+| 6 | `Regular_ContentHidden` | `LT_PreviewTable_1Text` |
+| 7 | `Wide_1List_Static_Preview` | `LT_PreviewTable_Left_1Graphic_1Text_Bottom` |
+| 8 | `CallScreen` (a tela do `x_call`) | `LT_PreviewTable_Left_1Graphic_1Text_Bottom` |
+
+A 0.0.3 (labels no `PreviewMap`) foi substituída antes de ir ao carro.
 
 Os itens são os do Mapas no painel, com dicas de exemplo. Apertar um item
 não faz nada: o app só mostra.

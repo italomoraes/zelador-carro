@@ -34,7 +34,7 @@ function estados() {
                 celulas: { Text: 'Cada botão abre uma versão da tela de dicas. Gire o botão sobre os itens e veja se a explicação aparece.' } }
         ].concat(VARIANTES.map((v) => ({
             id: botao(v).id, nome: botao(v).nome, tipo: 'button', widget: 'LT_Button_1Row', foco: 3,
-            celulas: { Text: `Variante ${v.n}: ${v.widget.replace('LT_State_', '')} / ${estado(v).pecas.map((p) => p.widget.replace('LT_Label_', '')).join(' + ')}` }
+            celulas: { Text: `Variante ${v.n}: ${v.widget.replace('LT_State_', '')} / ${estado(v).pecas.map((p) => p.widget.replace(/^LT_(Label|PreviewTable)_/, '')).join(' + ')}` }
         }))) }]
     };
     const variantes = VARIANTES.map((v) => {
@@ -42,12 +42,14 @@ function estados() {
         const itens = ITENS.map((it, i) => ({
             id: e.item(i).id, nome: e.item(i).nome, tipo: 'button', widget: 'LT_Button_1Row', foco: 3, celulas: { Text: it.nome }
         }));
-        const pecas = e.pecas.map((p) => ({ id: p.id, nome: p.nome, tipo: 'label', widget: p.widget, foco: 0,
-            celulas: p.texto ? { Text: ITENS[0].dica } : {} }));
+        const pecas = e.pecas.map((p) => p.componente === 'preview' ?
+            { id: p.id, nome: p.nome, tipo: 'preview', widget: p.widget, simples: true, celulas: {} } :
+            { id: p.id, nome: p.nome, tipo: 'label', widget: p.widget, foco: 0, celulas: p.texto ? { Text: ITENS[0].dica } : {} });
+        const previa = e.pecas.find((p) => p.componente === 'preview');
         const grupos = v.previa === 'List' ?
             [{ nome: 'List', componentes: itens.concat(pecas) }] :
-            [{ nome: 'List', componentes: itens }, { nome: v.previa, id: 300 + e.id, componentes: pecas }];
-        return { id: e.id, nome: e.nome, widget: v.widget, titulo: e.titulo, pai: ENTRADA.id, grupos };
+            [{ nome: v.previa, id: 300 + e.id, componentes: pecas }, { nome: 'List', componentes: itens }]; // a prévia antes, como no x_call
+        return { id: e.id, nome: e.nome, widget: v.widget, titulo: e.titulo, pai: ENTRADA.id, previa: previa && previa.id, grupos };
     });
     return [entrada].concat(variantes);
 }
@@ -59,15 +61,24 @@ function xml() {
         if (s.pai) {
             l.push(`        <property id="9" value="${s.pai}"/>`);
         }
+        if (s.previa) {
+            l.push(`        <property id="4" value="${s.previa}"/>`);
+        }
         l.push(`        <layoutGroup id="${100 + 2 * s.id}" name="Titlebar">`,
             `            <component id="${s.titulo}" type="title">`,
             '                <property id="2" value="1"/>',
             '            </component>',
             '        </layoutGroup>');
-        s.grupos.forEach((g, gi) => {
-            l.push(`        <layoutGroup id="${gi === 0 ? 101 + 2 * s.id : g.id}" name="${g.nome}">`,
-                '            <property id="3" value="1"/>');
+        s.grupos.forEach((g) => {
+            l.push(`        <layoutGroup id="${g.id || 101 + 2 * s.id}" name="${g.nome}">`);
+            if (!g.componentes.every((c) => c.simples)) {
+                l.push('            <property id="3" value="1"/>'); // como no x_call, o grupo só da prévia vai sem ela
+            }
             g.componentes.forEach((c) => {
+                if (c.simples) {
+                    l.push(`            <component id="${c.id}" type="${c.tipo}" widget="${c.widget}"/>`);
+                    return;
+                }
                 l.push(`            <component id="${c.id}" type="${c.tipo}" widget="${c.widget}">`,
                     '                <property id="2" value="1"/>',
                     `                <property id="3" value="${c.foco}"/>`,
@@ -94,14 +105,25 @@ function uiDescription() {
         s.grupos.forEach((g) => g.componentes.forEach((c) => {
             const cells = {};
             Object.keys(c.celulas).forEach((k) => { cells[k] = { value: c.celulas[k], type: 'Text' }; });
+            if (c.simples) {
+                components[c.id] = { type: c.tipo, name: c.nome };
+                return;
+            }
             components[c.id] = {
                 type: c.tipo, name: c.nome,
                 properties: { Visible: { value: 1, type: 'UInt' }, Focusable: { value: c.foco, type: 'UInt' } },
                 rows: [cells]
             };
         }));
+        const props = {};
+        if (s.pai) {
+            props.ParentState = { value: s.pai, type: 'UInt' };
+        }
+        if (s.previa) {
+            props.Preview = { value: s.previa, type: 'UInt' };
+        }
         containers[s.id] = Object.assign({ type: 'state', name: s.nome },
-            s.pai ? { properties: { ParentState: { value: s.pai, type: 'UInt' } } } : {}, { components });
+            Object.keys(props).length ? { properties: props } : {}, { components });
     });
     return { schemaVersion: '1.3.0', containers };
 }

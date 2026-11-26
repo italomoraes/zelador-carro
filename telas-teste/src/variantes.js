@@ -5,8 +5,8 @@
  * tela própria. Lido pelo app (src/telas_teste.js) e pelo gerador do
  * uiDescription (tools/gerar.js), para os ids e nomes andarem juntos.
  *
- * Todas põem as peças no grupo PreviewMap, o único que a 0.0.2 mostrou à
- * direita; cada variante testa uma combinação de peças.
+ * Todas usam o componente de prévia da BMW (tipo "preview"); cada variante
+ * testa uma tela ou uma peça LT_PreviewTable_*.
  */
 'use strict';
 
@@ -39,37 +39,35 @@ const ITENS = [
     }
 ];
 
-/* As peças que vão na prévia. Cada uma é um label; o app escreve o texto
- * (Text) nas que têm texto e o desenho (Graphic) nas que têm desenho. Os
- * nomes vieram da interface da central (LT_Label_*). */
+/* As peças que vão na prévia. A 0.0.3 tentava labels; a 0.0.4 segue o que
+ * os apps da própria BMW fazem (x_call, no backup da central): um componente
+ * do tipo "preview" com uma peça LT_PreviewTable_*, apontado pela
+ * propriedade Preview (id 4) da tela, com a explicação na célula Description
+ * e o desenho na Illustration. */
+const prev = (widget) => ({ widget, componente: 'preview', texto: true, desenho: true,
+    celTexto: 'Description', celDesenho: 'Illustration' });
 const PECAS = {
-    texto: { widget: 'LT_Label_1TextDyn_Preview', texto: true, desenho: false },
-    combo: { widget: 'LT_Label_BON_Preview_1Graphic_1Text', texto: true, desenho: true },
-    desenho: { widget: 'LT_Label_1Graphic_Scalable', texto: false, desenho: true },
-    desenhoFade: { widget: 'LT_Label_1FadingGraphic', texto: false, desenho: true },
-    desenhoSimples: { widget: 'LT_Label_1Graphic', texto: false, desenho: true },
-    textoTabela: { widget: 'LT_Label_1Text_PreviewTable', texto: true, desenho: false },
-    texto4: { widget: 'LT_Label_4Row_1TextDyn', texto: true, desenho: false },
-    texto5: { widget: 'LT_Label_5Row_1TextDyn_FixHeight', texto: true, desenho: false },
-    texto6: { widget: 'LT_Label_6Row_1TextDyn', texto: true, desenho: false }
+    esqBaixo: prev('LT_PreviewTable_Left_1Graphic_1Text_Bottom'),
+    esqCima: prev('LT_PreviewTable_Left_1Graphic_1Text_Top'),
+    baixo: prev('LT_PreviewTable_1Graphic_1TextBottom'),
+    duasLinhas: prev('LT_PreviewTable_1Graphic_1Text2Row'),
+    tresLinhas: prev('LT_PreviewTable_1Graphic_1Text3Row'),
+    soTexto: Object.assign(prev('LT_PreviewTable_1Text'), { desenho: false })
 };
 
-/* Cada variante: a tela (widget), o grupo da prévia e as peças dela. A 0.0.2
- * mostrou que só o grupo PreviewMap, na Regular_ContentHidden, desenha à
- * direita: um desenho no alto e uma linha de texto cortada embaixo. A 0.0.3
- * fica nesse grupo e separa as peças, para saber qual desenha o quê, e tenta
- * texto em várias linhas e o desenho com fade. */
+/* Cada variante: a tela, o grupo da prévia (ContentPreview, como no x_call)
+ * e a peça. A 0.0.2 mostrou que labels comuns só aparecem no PreviewMap; a
+ * 0.0.4 testa o caminho da BMW. A 8 é a tela exata do x_call, a referência. */
 const REGULAR = 'LT_State_Regular_ContentHidden';
 const VARIANTES = [
-    { n: 1, widget: REGULAR, previa: 'PreviewMap', pecas: ['texto'] },
-    { n: 2, widget: REGULAR, previa: 'PreviewMap', pecas: ['combo'] },
-    { n: 3, widget: REGULAR, previa: 'PreviewMap', pecas: ['desenho'] },
-    { n: 4, widget: REGULAR, previa: 'PreviewMap', pecas: ['desenhoFade', 'texto4'] },
-    { n: 5, widget: REGULAR, previa: 'PreviewMap', pecas: ['desenho', 'texto5'] },
-    { n: 6, widget: REGULAR, previa: 'PreviewMap', pecas: ['desenhoSimples', 'texto6'] },
-    { n: 7, widget: REGULAR, previa: 'PreviewMap', pecas: ['textoTabela'] },
-    { n: 8, widget: 'LT_State_Wide_1List_Static_Preview', previa: 'PreviewMap', pecas: ['texto', 'combo', 'desenho'] },
-    { n: 9, widget: REGULAR, previa: 'PreviewMap', pecas: ['texto', 'combo', 'desenho'] }
+    { n: 1, widget: REGULAR, previa: 'ContentPreview', pecas: ['esqBaixo'] },
+    { n: 2, widget: REGULAR, previa: 'ContentPreview', pecas: ['esqCima'] },
+    { n: 3, widget: REGULAR, previa: 'ContentPreview', pecas: ['baixo'] },
+    { n: 4, widget: REGULAR, previa: 'ContentPreview', pecas: ['duasLinhas'] },
+    { n: 5, widget: REGULAR, previa: 'ContentPreview', pecas: ['tresLinhas'] },
+    { n: 6, widget: REGULAR, previa: 'ContentPreview', pecas: ['soTexto'] },
+    { n: 7, widget: 'LT_State_Wide_1List_Static_Preview', previa: 'ContentPreview', pecas: ['esqBaixo'] },
+    { n: 8, widget: 'LT_State_CallScreen', previa: 'ContentPreview', pecas: ['esqBaixo'] }
 ];
 
 /* Ids: estados 1 (entrada) e 10 + n; grupos 100 + 2 * estado (título),

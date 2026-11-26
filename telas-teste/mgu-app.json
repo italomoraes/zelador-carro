@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "id": "italo_telas_teste",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "tree": "package",
   "modules": [
     "src/telas_teste.js",
