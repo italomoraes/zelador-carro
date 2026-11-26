@@ -34,7 +34,7 @@ function estados() {
                 celulas: { Text: 'Cada botão abre uma versão da tela de dicas. Gire o botão sobre os itens e veja se a explicação aparece.' } }
         ].concat(VARIANTES.map((v) => ({
             id: botao(v).id, nome: botao(v).nome, tipo: 'button', widget: 'LT_Button_1Row', foco: 3,
-            celulas: { Text: `Variante ${v.n}: ${v.widget.replace('LT_State_', '')}${v.previa ? ` / ${v.previa}` : ' (explicação embaixo)'}` }
+            celulas: { Text: `Variante ${v.n}: ${v.widget.replace('LT_State_', '')} / ${v.previa === 'List' ? 'na lista' : v.previa}` }
         }))) }]
     };
     const variantes = VARIANTES.map((v) => {
@@ -42,12 +42,11 @@ function estados() {
         const itens = ITENS.map((it, i) => ({
             id: e.item(i).id, nome: e.item(i).nome, tipo: 'button', widget: 'LT_Button_1Row', foco: 3, celulas: { Text: it.nome }
         }));
-        const texto = { id: e.texto.id, nome: e.texto.nome, tipo: 'label', widget: 'LT_Label_4Row_1TextDyn', foco: 0,
-            celulas: { Text: ITENS[0].dica } };
-        const imagem = { id: e.imagem.id, nome: e.imagem.nome, tipo: 'label', widget: 'LT_Label_1Graphic_Scalable', foco: 0, celulas: {} };
-        const grupos = v.previa ?
-            [{ nome: v.lista, componentes: itens }, { nome: v.previa, id: 300 + e.id, componentes: [texto, imagem] }] :
-            [{ nome: v.lista, componentes: itens.concat([texto]) }];
+        const pecas = e.pecas.map((p) => ({ id: p.id, nome: p.nome, tipo: 'label', widget: p.widget, foco: 0,
+            celulas: p.texto ? { Text: ITENS[0].dica } : {} }));
+        const grupos = v.previa === 'List' ?
+            [{ nome: 'List', componentes: itens.concat(pecas) }] :
+            [{ nome: 'List', componentes: itens }, { nome: v.previa, id: 300 + e.id, componentes: pecas }];
         return { id: e.id, nome: e.nome, widget: v.widget, titulo: e.titulo, pai: ENTRADA.id, grupos };
     });
     return [entrada].concat(variantes);

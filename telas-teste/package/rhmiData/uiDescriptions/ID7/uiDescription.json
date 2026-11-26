@@ -61,7 +61,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 1: Wide_1List_Static_Preview / ContentPreview",
+                "value": "Variante 1: Regular_ContentHidden / ContentPreview",
                 "type": "Text"
               }
             }
@@ -83,7 +83,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 2: Wide_1List_Static_Preview / Content",
+                "value": "Variante 2: Regular_ContentHidden / Content",
                 "type": "Text"
               }
             }
@@ -105,7 +105,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 3: Regular_ContentHidden / Content",
+                "value": "Variante 3: Regular_ContentHidden / ListStatic",
                 "type": "Text"
               }
             }
@@ -127,7 +127,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 4: Regular_ContentHidden / ContentPreview",
+                "value": "Variante 4: Regular_ContentHidden / Table",
                 "type": "Text"
               }
             }
@@ -149,7 +149,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 5: Regular_ContentHidden_PreviewLeft / ContentPreview",
+                "value": "Variante 5: Regular_ContentHidden / PreviewMap",
                 "type": "Text"
               }
             }
@@ -171,7 +171,95 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 6: Wide (explicação embaixo)",
+                "value": "Variante 6: Regular_ContentHidden / MainGroup",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "57": {
+          "type": "button",
+          "name": "telasAbre7",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Variante 7: Regular_ContentHidden / na lista",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "58": {
+          "type": "button",
+          "name": "telasAbre8",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Variante 8: Wide_1List_Static_Preview / ContentPreview",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "59": {
+          "type": "button",
+          "name": "telasAbre9",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Variante 9: Wide_1List_Static_Preview / ListStatic",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "60": {
+          "type": "button",
+          "name": "telasAbre10",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Variante 10: Wide / na lista",
                 "type": "Text"
               }
             }
@@ -319,7 +407,7 @@
         },
         "1120": {
           "type": "label",
-          "name": "telasV1Texto",
+          "name": "telasV1Peca0",
           "properties": {
             "Visible": {
               "value": 1,
@@ -341,7 +429,29 @@
         },
         "1121": {
           "type": "label",
-          "name": "telasV1Imagem",
+          "name": "telasV1Peca1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum.",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1122": {
+          "type": "label",
+          "name": "telasV1Peca2",
           "properties": {
             "Visible": {
               "value": 1,
@@ -498,7 +608,7 @@
         },
         "1220": {
           "type": "label",
-          "name": "telasV2Texto",
+          "name": "telasV2Peca0",
           "properties": {
             "Visible": {
               "value": 1,
@@ -520,7 +630,29 @@
         },
         "1221": {
           "type": "label",
-          "name": "telasV2Imagem",
+          "name": "telasV2Peca1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum.",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1222": {
+          "type": "label",
+          "name": "telasV2Peca2",
           "properties": {
             "Visible": {
               "value": 1,
@@ -677,7 +809,7 @@
         },
         "1320": {
           "type": "label",
-          "name": "telasV3Texto",
+          "name": "telasV3Peca0",
           "properties": {
             "Visible": {
               "value": 1,
@@ -699,7 +831,29 @@
         },
         "1321": {
           "type": "label",
-          "name": "telasV3Imagem",
+          "name": "telasV3Peca1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum.",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1322": {
+          "type": "label",
+          "name": "telasV3Peca2",
           "properties": {
             "Visible": {
               "value": 1,
@@ -856,7 +1010,7 @@
         },
         "1420": {
           "type": "label",
-          "name": "telasV4Texto",
+          "name": "telasV4Peca0",
           "properties": {
             "Visible": {
               "value": 1,
@@ -878,7 +1032,29 @@
         },
         "1421": {
           "type": "label",
-          "name": "telasV4Imagem",
+          "name": "telasV4Peca1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum.",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1422": {
+          "type": "label",
+          "name": "telasV4Peca2",
           "properties": {
             "Visible": {
               "value": 1,
@@ -1035,7 +1211,7 @@
         },
         "1520": {
           "type": "label",
-          "name": "telasV5Texto",
+          "name": "telasV5Peca0",
           "properties": {
             "Visible": {
               "value": 1,
@@ -1057,7 +1233,29 @@
         },
         "1521": {
           "type": "label",
-          "name": "telasV5Imagem",
+          "name": "telasV5Peca1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum.",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1522": {
+          "type": "label",
+          "name": "telasV5Peca2",
           "properties": {
             "Visible": {
               "value": 1,
@@ -1214,7 +1412,7 @@
         },
         "1620": {
           "type": "label",
-          "name": "telasV6Texto",
+          "name": "telasV6Peca0",
           "properties": {
             "Visible": {
               "value": 1,
@@ -1232,6 +1430,827 @@
                 "type": "Text"
               }
             }
+          ]
+        },
+        "1621": {
+          "type": "label",
+          "name": "telasV6Peca1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum.",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1622": {
+          "type": "label",
+          "name": "telasV6Peca2",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {}
+          ]
+        }
+      }
+    },
+    "17": {
+      "type": "state",
+      "name": "ST_ItaloTelas_V7",
+      "properties": {
+        "ParentState": {
+          "value": 1,
+          "type": "UInt"
+        }
+      },
+      "components": {
+        "1700": {
+          "type": "title",
+          "name": "ST_ItaloTelas_V7_Title",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "SID_TELAS_TITLE",
+                "type": "StringId"
+              }
+            }
+          ]
+        },
+        "1701": {
+          "type": "button",
+          "name": "telasV7Item0",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Mostrar em",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1702": {
+          "type": "button",
+          "name": "telasV7Item1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Ocultar a caixa de seta da BMW",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1703": {
+          "type": "button",
+          "name": "telasV7Item2",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "CarPlay: Patch",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1704": {
+          "type": "button",
+          "name": "telasV7Item3",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Android Auto",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1705": {
+          "type": "button",
+          "name": "telasV7Item4",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Logs",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1720": {
+          "type": "label",
+          "name": "telasV7Peca0",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum.",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1721": {
+          "type": "label",
+          "name": "telasV7Peca1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum.",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1722": {
+          "type": "label",
+          "name": "telasV7Peca2",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {}
+          ]
+        }
+      }
+    },
+    "18": {
+      "type": "state",
+      "name": "ST_ItaloTelas_V8",
+      "properties": {
+        "ParentState": {
+          "value": 1,
+          "type": "UInt"
+        }
+      },
+      "components": {
+        "1800": {
+          "type": "title",
+          "name": "ST_ItaloTelas_V8_Title",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "SID_TELAS_TITLE",
+                "type": "StringId"
+              }
+            }
+          ]
+        },
+        "1801": {
+          "type": "button",
+          "name": "telasV8Item0",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Mostrar em",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1802": {
+          "type": "button",
+          "name": "telasV8Item1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Ocultar a caixa de seta da BMW",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1803": {
+          "type": "button",
+          "name": "telasV8Item2",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "CarPlay: Patch",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1804": {
+          "type": "button",
+          "name": "telasV8Item3",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Android Auto",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1805": {
+          "type": "button",
+          "name": "telasV8Item4",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Logs",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1820": {
+          "type": "label",
+          "name": "telasV8Peca0",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum.",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1821": {
+          "type": "label",
+          "name": "telasV8Peca1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum.",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1822": {
+          "type": "label",
+          "name": "telasV8Peca2",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {}
+          ]
+        }
+      }
+    },
+    "19": {
+      "type": "state",
+      "name": "ST_ItaloTelas_V9",
+      "properties": {
+        "ParentState": {
+          "value": 1,
+          "type": "UInt"
+        }
+      },
+      "components": {
+        "1900": {
+          "type": "title",
+          "name": "ST_ItaloTelas_V9_Title",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "SID_TELAS_TITLE",
+                "type": "StringId"
+              }
+            }
+          ]
+        },
+        "1901": {
+          "type": "button",
+          "name": "telasV9Item0",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Mostrar em",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1902": {
+          "type": "button",
+          "name": "telasV9Item1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Ocultar a caixa de seta da BMW",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1903": {
+          "type": "button",
+          "name": "telasV9Item2",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "CarPlay: Patch",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1904": {
+          "type": "button",
+          "name": "telasV9Item3",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Android Auto",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1905": {
+          "type": "button",
+          "name": "telasV9Item4",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Logs",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1920": {
+          "type": "label",
+          "name": "telasV9Peca0",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum.",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1921": {
+          "type": "label",
+          "name": "telasV9Peca1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum.",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "1922": {
+          "type": "label",
+          "name": "telasV9Peca2",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {}
+          ]
+        }
+      }
+    },
+    "20": {
+      "type": "state",
+      "name": "ST_ItaloTelas_V10",
+      "properties": {
+        "ParentState": {
+          "value": 1,
+          "type": "UInt"
+        }
+      },
+      "components": {
+        "2000": {
+          "type": "title",
+          "name": "ST_ItaloTelas_V10_Title",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "SID_TELAS_TITLE",
+                "type": "StringId"
+              }
+            }
+          ]
+        },
+        "2001": {
+          "type": "button",
+          "name": "telasV10Item0",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Mostrar em",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "2002": {
+          "type": "button",
+          "name": "telasV10Item1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Ocultar a caixa de seta da BMW",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "2003": {
+          "type": "button",
+          "name": "telasV10Item2",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "CarPlay: Patch",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "2004": {
+          "type": "button",
+          "name": "telasV10Item3",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Android Auto",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "2005": {
+          "type": "button",
+          "name": "telasV10Item4",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 3,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Logs",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "2020": {
+          "type": "label",
+          "name": "telasV10Peca0",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {
+              "Text": {
+                "value": "Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum.",
+                "type": "Text"
+              }
+            }
+          ]
+        },
+        "2021": {
+          "type": "label",
+          "name": "telasV10Peca1",
+          "properties": {
+            "Visible": {
+              "value": 1,
+              "type": "UInt"
+            },
+            "Focusable": {
+              "value": 0,
+              "type": "UInt"
+            }
+          },
+          "rows": [
+            {}
           ]
         }
       }

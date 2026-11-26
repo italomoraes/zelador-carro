@@ -122,7 +122,7 @@ class TelasTeste extends OnlineApp {
         VARIANTES.forEach((v) => {
             const e = estado(v);
             const st = rhmi.getByName(e.nome);
-            anota(`variante ${v.n} (${v.widget} / ${v.previa || 'embaixo'}): estado ${st ? 'achado' : 'FALTANDO'}`);
+            anota(`variante ${v.n} (${v.widget} / ${v.previa}): estado ${st ? 'achado' : 'FALTANDO'}`);
             if (st) {
                 estados.push(st);
                 st.on('visible', (ev) => {
@@ -133,10 +133,7 @@ class TelasTeste extends OnlineApp {
                     }
                 });
             }
-            this._achar(e.texto.nome);
-            if (v.previa) {
-                this._achar(e.imagem.nome);  /* a 6 não tem desenho */
-            }
+            e.pecas.forEach((p) => this._achar(p.nome));
             ITENS.forEach((it, i) => {
                 const nome = e.item(i).nome;
                 if (this._achar(nome)) {
@@ -172,6 +169,7 @@ class TelasTeste extends OnlineApp {
         rhmi.on('restoreHmi', () => anota('RESTORE_HMI'));
         return Promise.all(estados.map((st) => Promise.resolve(st.updateResources())
             .catch((err) => anota(`updateResources: ${err && err.message}`))))
+            .then(() => this._registrarImagens())
             .then(() => {
                 VARIANTES.forEach((v) => this._previa(v, 0));
                 anota('telas prontas');
@@ -206,20 +204,46 @@ class TelasTeste extends OnlineApp {
         }
     }
 
-    /* A explicação e o desenho do item i na variante v. */
+    /* A interface só mostra um desenho registrado no pacote de recursos do
+     * app (como o QR code do Mapas no painel): sem isso o setValue falha com
+     * "Cannot create ParameterValueUnion for value: undefined" (0.0.1). */
+    _registrarImagens() {
+        const arquivos = Object.keys(this._imagens).map((k) => this._imagens[k]);
+        if (!arquivos.length) {
+            return Promise.resolve();
+        }
+        return Promise.resolve()
+            .then(() => this.rhmiApplication.getResourceBundle().createResourceHandles(arquivos))
+            .then(() => {
+                this._imagensProntas = true;
+                anota(`imagens registradas: ${arquivos.length}`);
+            })
+            .catch((err) => anota(`registrar imagens: ${err && err.message}`));
+    }
+
+    /* A explicação e o desenho do item i nas peças da variante v; cada erro
+     * fica anotado com a peça, para saber qual a interface aceita. */
     _previa(v, i) {
         const e = estado(v);
         const it = ITENS[i];
-        const texto = this._comp[e.texto.nome];
-        const imagem = this._comp[e.imagem.nome];
-        if (texto) {
-            Promise.resolve(texto.setValue(0, 'Text', v.previa ? it.dica : `${it.nome}: ${it.dica}`, 'Text'))
-                .catch((err) => anota(`variante ${v.n}: texto: ${err && err.message}`));
-        }
-        if (imagem && this._imagens[it.imagem]) {
-            Promise.resolve(imagem.setValue(0, 'Graphic', this._imagens[it.imagem], 'ResourceId'))
-                .catch((err) => anota(`variante ${v.n}: imagem: ${err && err.message}`));
-        }
+        const escritas = [];
+        e.pecas.forEach((p) => {
+            const c = this._comp[p.nome];
+            if (!c) {
+                return;
+            }
+            if (p.texto) {
+                escritas.push(Promise.resolve(c.setValue(0, 'Text', v.previa === 'List' && !p.desenho ? `${it.nome}: ${it.dica}` : it.dica, 'Text'))
+                    .catch((err) => anota(`variante ${v.n}: ${p.widget} texto: ${err && err.message}`)));
+            }
+            if (p.desenho && this._imagensProntas && this._imagens[it.imagem]) {
+                escritas.push(Promise.resolve(c.setValue(0, 'Graphic', this._imagens[it.imagem], 'ResourceId'))
+                    .catch((err) => anota(`variante ${v.n}: ${p.widget} desenho: ${err && err.message}`)));
+            }
+        });
+        return Promise.all(escritas)
+            .then(() => this.rhmiApplication.flush && this.rhmiApplication.flush())
+            .catch((err) => anota(`variante ${v.n}: flush: ${err && err.message}`));
     }
 
     _abrir(nome) {

@@ -38,9 +38,8 @@ confere(new Set(ids).size === ids.length, 'ids sem repetição');
 VARIANTES.forEach((v) => {
     const e = estado(v);
     confere(xml.includes(`<container id="${e.id}" type="state" widget="${v.widget}">`), `variante ${v.n} com a tela ${v.widget}`);
-    if (v.previa) {
-        confere(xml.includes(`name="${v.previa}"`), `variante ${v.n} com o grupo ${v.previa}`);
-    }
+    confere(xml.includes(`name="${v.previa}"`), `variante ${v.n} com o grupo ${v.previa}`);
+    e.pecas.forEach((p) => confere(xml.includes(`<component id="${p.id}" type="label" widget="${p.widget}">`), `variante ${v.n}: peça ${p.widget}`));
 });
 const app = JSON.parse(fs.readFileSync(path.join(PKG, 'rhmiData/application.json'), 'utf8')).application;
 confere(fs.existsSync(path.join(PKG, 'rhmiData/variantGroups/Common/images', app.entryPoints[0].icon)), 'ícone do ponto de entrada existe');
@@ -60,8 +59,11 @@ Object.keys(ui.containers).forEach((cid) => {
     comps[c.name] = new Comp(c.name, Number(cid));
     Object.keys(c.components).forEach((id) => { comps[c.components[id].name] = new Comp(c.components[id].name, Number(id)); });
 });
+const registrados = [];
 const rhmi = Object.assign(new EventEmitter(), {
     getByName: (n) => comps[n] || null,
+    getResourceBundle: () => ({ createResourceHandles: (arqs) => { registrados.push(...arqs); return Promise.resolve(); } }),
+    flush: () => { chamadas.push({ flush: true }); return Promise.resolve(); },
     openState: (n) => { chamadas.push({ abre: n }); return Promise.resolve(); },
     openEntryState: () => Promise.resolve(),
     mapEntryState: () => Promise.resolve()
@@ -101,6 +103,7 @@ const espera = () => new Promise((r) => setTimeout(r, 30));
     if (!registro.includes('telas prontas') || /FALTANDO|ERRO/.test(registro)) console.log(registro);
     confere(registro.includes('telas prontas') && !registro.includes('FALTANDO') && !registro.includes('ERRO'), 'o app achou tudo');
     confere(fs.existsSync(path.join(tmp, 'painel.png')), 'imagens copiadas');
+    confere(registrados.length === 4 && registrados.every((a) => a.startsWith(tmp)), 'imagens registradas na interface antes de usar');
     for (const v of VARIANTES) {
         const e = estado(v);
         chamadas.length = 0;
@@ -115,10 +118,15 @@ const espera = () => new Promise((r) => setTimeout(r, 30));
                 rhmi.emit('userEvent', { eventType: 'FOCUS', sourceId: nomes[e.item(i).nome], parameterMap: { 0: true } });
             }
             await espera();
-            const t = chamadas.find((c) => c.nome === e.texto.nome);
-            confere(t && t.value.includes(ITENS[i].dica), `variante ${v.n}, item ${i}: a explicação troca`);
-            const g = chamadas.find((c) => c.nome === e.imagem.nome);
-            confere(v.previa ? g && g.type === 'ResourceId' && g.value === path.join(tmp, `${ITENS[i].imagem}.png`) : !g, `variante ${v.n}, item ${i}: o desenho troca`);
+            e.pecas.forEach((p) => {
+                const t = chamadas.find((c) => c.nome === p.nome && c.cell === 'Text');
+                confere(p.texto ? t && t.value.includes(ITENS[i].dica) : !t, `variante ${v.n}, item ${i}, ${p.widget}: texto`);
+                const g = chamadas.find((c) => c.nome === p.nome && c.cell === 'Graphic');
+                confere(p.desenho ? g && g.type === 'ResourceId' && g.value === path.join(tmp, `${ITENS[i].imagem}.png`) : !g,
+                    `variante ${v.n}, item ${i}, ${p.widget}: desenho`);
+            });
+            const ultimo = chamadas.map((c) => !!c.flush).lastIndexOf(true);
+            confere(ultimo === chamadas.length - 1, `variante ${v.n}, item ${i}: flush depois das escritas`);
         }
         chamadas.length = 0;
         comps[e.item(0).nome].emit('focus', { value: false });
