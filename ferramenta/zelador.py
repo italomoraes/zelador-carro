@@ -19,7 +19,8 @@ no próximo ciclo. O carro se apresenta com um id sorteado na primeira vez
 Coleta, cada parte num .txt em dados/coleta, do dono do envio:
 - o que entrou de novo nos arquivos de `coleta` da configuração: os logs do
   Mapas no painel e do cluster-render e o diário que o waze-on-cluster guarda
-  na RAM (o CarPlay, o Android Auto, o systemd e o kernel, Wi-Fi incluído).
+  na RAM (o CarPlay, o Android Auto, o systemd e o kernel, Wi-Fi incluído),
+  e o registro do app Teste de telas (telas-teste/, também na RAM).
   Cada arquivo é seguido pelo inode quando gira (arquivo -> arquivo.1 -> ...
   -> arquivo.9), então o que entrou antes do giro não se perde nem se repete;
 - o diário do mgu-uplink (as buscas e conexões do Wi-Fi da loja) desde a
