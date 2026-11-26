@@ -37,14 +37,6 @@
                 <property id="2" value="1"/>
                 <property id="3" value="3"/>
             </component>
-            <component id="57" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="58" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
         </layoutGroup>
     </container>
     <container id="11" type="state" widget="LT_State_Regular_ContentHidden">
@@ -56,7 +48,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="311" name="ContentPreview">
-            <component id="1120" type="preview" widget="LT_PreviewTable_Left_1Graphic_1Text_Bottom"/>
+            <component id="1120" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
         </layoutGroup>
         <layoutGroup id="123" name="List">
             <property id="3" value="1"/>
@@ -91,7 +83,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="312" name="ContentPreview">
-            <component id="1220" type="preview" widget="LT_PreviewTable_Left_1Graphic_1Text_Top"/>
+            <component id="1220" type="preview" widget="LT_PreviewTable_1Graphic_1Text2Row"/>
         </layoutGroup>
         <layoutGroup id="125" name="List">
             <property id="3" value="1"/>
@@ -126,7 +118,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="313" name="ContentPreview">
-            <component id="1320" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
+            <component id="1320" type="preview" widget="LT_PreviewTable_1Graphic_1Text3Row"/>
         </layoutGroup>
         <layoutGroup id="127" name="List">
             <property id="3" value="1"/>
@@ -161,7 +153,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="314" name="ContentPreview">
-            <component id="1420" type="preview" widget="LT_PreviewTable_1Graphic_1Text2Row"/>
+            <component id="1420" type="preview" widget="LT_PreviewTable_Left_1Graphic_1Text_Bottom"/>
         </layoutGroup>
         <layoutGroup id="129" name="List">
             <property id="3" value="1"/>
@@ -196,7 +188,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="315" name="ContentPreview">
-            <component id="1520" type="preview" widget="LT_PreviewTable_1Graphic_1Text3Row"/>
+            <component id="1520" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
         </layoutGroup>
         <layoutGroup id="131" name="List">
             <property id="3" value="1"/>
@@ -231,7 +223,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="316" name="ContentPreview">
-            <component id="1620" type="preview" widget="LT_PreviewTable_1Text"/>
+            <component id="1620" type="preview" widget="LT_PreviewTable_Left_1Graphic_1Text_Bottom"/>
         </layoutGroup>
         <layoutGroup id="133" name="List">
             <property id="3" value="1"/>
@@ -252,76 +244,6 @@
                 <property id="3" value="3"/>
             </component>
             <component id="1605" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-        </layoutGroup>
-    </container>
-    <container id="17" type="state" widget="LT_State_Wide_1List_Static_Preview">
-        <property id="9" value="1"/>
-        <property id="4" value="1720"/>
-        <layoutGroup id="134" name="Titlebar">
-            <component id="1700" type="title">
-                <property id="2" value="1"/>
-            </component>
-        </layoutGroup>
-        <layoutGroup id="317" name="ContentPreview">
-            <component id="1720" type="preview" widget="LT_PreviewTable_Left_1Graphic_1Text_Bottom"/>
-        </layoutGroup>
-        <layoutGroup id="135" name="List">
-            <property id="3" value="1"/>
-            <component id="1701" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="1702" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="1703" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="1704" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="1705" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-        </layoutGroup>
-    </container>
-    <container id="18" type="state" widget="LT_State_CallScreen">
-        <property id="9" value="1"/>
-        <property id="4" value="1820"/>
-        <layoutGroup id="136" name="Titlebar">
-            <component id="1800" type="title">
-                <property id="2" value="1"/>
-            </component>
-        </layoutGroup>
-        <layoutGroup id="318" name="ContentPreview">
-            <component id="1820" type="preview" widget="LT_PreviewTable_Left_1Graphic_1Text_Bottom"/>
-        </layoutGroup>
-        <layoutGroup id="137" name="List">
-            <property id="3" value="1"/>
-            <component id="1801" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="1802" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="1803" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="1804" type="button" widget="LT_Button_1Row">
-                <property id="2" value="1"/>
-                <property id="3" value="3"/>
-            </component>
-            <component id="1805" type="button" widget="LT_Button_1Row">
                 <property id="2" value="1"/>
                 <property id="3" value="3"/>
             </component>

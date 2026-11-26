@@ -20,7 +20,7 @@ const fs = require('fs');
 const path = require('path');
 const OnlineApp = require('oap-sdk/src/core/OnlineApp.js');
 const logging = require('oap-sdk/src/logging/logging');
-const { ITENS, VARIANTES, ENTRADA, estado, botao } = require('./variantes.js');
+const { ITENS, VARIANTES, ENTRADA, estado, botao, conteudo } = require('./variantes.js');
 
 const logger = logging.getSDKLogger();
 const PASTA = '/dev/shm/italo_telas_teste';
@@ -226,6 +226,7 @@ class TelasTeste extends OnlineApp {
     _previa(v, i) {
         const e = estado(v);
         const it = ITENS[i];
+        const mostra = conteudo(v, i);
         const escritas = [];
         e.pecas.forEach((p) => {
             const c = this._comp[p.nome];
@@ -233,11 +234,11 @@ class TelasTeste extends OnlineApp {
                 return;
             }
             if (p.texto) {
-                escritas.push(Promise.resolve(c.setValue(0, p.celTexto || 'Text', v.previa === 'List' && !p.desenho ? `${it.nome}: ${it.dica}` : it.dica, 'Text'))
+                escritas.push(Promise.resolve(c.setValue(0, p.celTexto || 'Text', v.previa === 'List' && !p.desenho ? `${it.nome}: ${mostra.texto}` : mostra.texto, 'Text'))
                     .catch((err) => anota(`variante ${v.n}: ${p.widget} texto: ${err && err.message}`)));
             }
-            if (p.desenho && this._imagensProntas && this._imagens[it.imagem]) {
-                escritas.push(Promise.resolve(c.setValue(0, p.celDesenho || 'Graphic', this._imagens[it.imagem], 'ResourceId'))
+            if (p.desenho && this._imagensProntas && this._imagens[mostra.imagem]) {
+                escritas.push(Promise.resolve(c.setValue(0, p.celDesenho || 'Graphic', this._imagens[mostra.imagem], 'ResourceId'))
                     .catch((err) => anota(`variante ${v.n}: ${p.widget} desenho: ${err && err.message}`)));
             }
         });

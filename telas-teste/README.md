@@ -41,6 +41,26 @@ célula `Description` e o desenho na `Illustration`.
 
 A 0.0.3 (labels no `PreviewMap`) foi substituída antes de ir ao carro.
 
+**0.0.4 (26/11):** funciona nas 8 variantes, com a troca animada. As peças
+`1Graphic_*` põem o desenho de fundo na área inteira da prévia e o texto por
+cima (como nas configurações da BMW); as `Left_*` reservam um lugar pequeno
+para o desenho e cortam o texto na 3ª linha.
+
+**0.0.5:** desenhos no tamanho da área. Pelas definições da interface, a
+prévia dessa tela tem 957×639 em unidades de 1920×720, e as telas menores
+(1600×600, 1440×540, 1280×480) reduzem tudo por igual; um desenho nesse
+tamanho deve servir a todas. `tools/desenhos.swift` desenha cada imagem
+nesse tamanho, com a faixa do texto livre, e uma régua.
+
+| Variante | Peça | Desenho | Dica |
+|---|---|---|---|
+| 1 | `1Graphic_1TextBottom` | 957×639, texto embaixo | completa |
+| 2 | `1Graphic_1Text2Row` | 957×639, texto em cima | completa |
+| 3 | `1Graphic_1Text3Row` | 957×639, texto em cima | completa |
+| 4 | `Left_1Graphic_1Text_Bottom` | pequeno (300×220) | curta |
+| 5 | `1Graphic_1TextBottom` | régua | completa |
+| 6 | `Left_1Graphic_1Text_Bottom` | régua | curta |
+
 Os itens são os do Mapas no painel, com dicas de exemplo. Apertar um item
 não faz nada: o app só mostra.
 
@@ -63,6 +83,7 @@ desligar.
 - `src/telas_teste.js`: o app.
 - `tools/gerar.js`: escreve o uiDescription, os textos e o `application.json`
   a partir de `src/variantes.js` (`node tools/gerar.js`).
+- `tools/desenhos.swift`: as imagens de `package/imagens` (`swift tools/desenhos.swift package/imagens`).
 - `tools/teste.js`: testa o app no computador, com um oap-sdk de mentira
   (`node tools/teste.js`).
 

@@ -13,7 +13,7 @@ const fs = require('fs');
 const Module = require('module');
 const os = require('os');
 const path = require('path');
-const { ITENS, VARIANTES, estado, botao } = require('../src/variantes.js');
+const { ITENS, VARIANTES, estado, botao, conteudo } = require('../src/variantes.js');
 const gerar = require('./gerar.js');
 
 let ok = 0;
@@ -47,7 +47,8 @@ VARIANTES.forEach((v) => {
 });
 const app = JSON.parse(fs.readFileSync(path.join(PKG, 'rhmiData/application.json'), 'utf8')).application;
 confere(fs.existsSync(path.join(PKG, 'rhmiData/variantGroups/Common/images', app.entryPoints[0].icon)), 'ícone do ponto de entrada existe');
-new Set(ITENS.map((i) => i.imagem)).forEach((n) => confere(fs.existsSync(path.join(PKG, 'imagens', `${n}.png`)), `imagem ${n}.png`));
+VARIANTES.forEach((v) => ITENS.forEach((it, i) => { const n = conteudo(v, i).imagem; confere(fs.existsSync(path.join(PKG, 'imagens', `${n}.png`)), `imagem ${n}.png`); }));
+const PNGS = fs.readdirSync(path.join(PKG, 'imagens')).filter((n) => /\.png$/.test(n));
 
 /* 2. O app com um oap-sdk de mentira. */
 const chamadas = [];
@@ -107,7 +108,7 @@ const espera = () => new Promise((r) => setTimeout(r, 30));
     if (!registro.includes('telas prontas') || /FALTANDO|ERRO/.test(registro)) console.log(registro);
     confere(registro.includes('telas prontas') && !registro.includes('FALTANDO') && !registro.includes('ERRO'), 'o app achou tudo');
     confere(fs.existsSync(path.join(tmp, 'painel.png')), 'imagens copiadas');
-    confere(registrados.length === 4 && registrados.every((a) => a.startsWith(tmp)), 'imagens registradas na interface antes de usar');
+    confere(registrados.length === PNGS.length && registrados.every((a) => a.startsWith(tmp)), 'imagens registradas na interface antes de usar');
     for (const v of VARIANTES) {
         const e = estado(v);
         chamadas.length = 0;
@@ -124,9 +125,9 @@ const espera = () => new Promise((r) => setTimeout(r, 30));
             await espera();
             e.pecas.forEach((p) => {
                 const t = chamadas.find((c) => c.nome === p.nome && c.cell === (p.celTexto || 'Text'));
-                confere(p.texto ? t && t.value.includes(ITENS[i].dica) : !t, `variante ${v.n}, item ${i}, ${p.widget}: texto`);
+                confere(p.texto ? t && t.value.includes(conteudo(v, i).texto) : !t, `variante ${v.n}, item ${i}, ${p.widget}: texto`);
                 const g = chamadas.find((c) => c.nome === p.nome && c.cell === (p.celDesenho || 'Graphic'));
-                confere(p.desenho ? g && g.type === 'ResourceId' && g.value === path.join(tmp, `${ITENS[i].imagem}.png`) : !g,
+                confere(p.desenho ? g && g.type === 'ResourceId' && g.value === path.join(tmp, `${conteudo(v, i).imagem}.png`) : !g,
                     `variante ${v.n}, item ${i}, ${p.widget}: desenho`);
             });
             const ultimo = chamadas.map((c) => !!c.flush).lastIndexOf(true);
