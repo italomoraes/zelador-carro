@@ -61,6 +61,29 @@ nesse tamanho, com a faixa do texto livre, e uma régua.
 | 5 | `1Graphic_1TextBottom` | régua | completa |
 | 6 | `Left_1Graphic_1Text_Bottom` | régua | curta |
 
+**0.0.5 (26/11):** a variante 1 (`1Graphic_1TextBottom` com o desenho de
+957×639) fica como nas configurações da BMW, e a régua confirmou a área. O
+texto tem no máximo 3 linhas, de 791 de largura com letra 42: o que sobra
+vai para a 3ª linha e é cortado no meio da letra.
+
+**0.0.6:** as dicas encurtadas para caber em 3 linhas, e peças que podem
+mostrar mais texto:
+
+| Variante | Peça | Desenho | Texto |
+|---|---|---|---|
+| 1 | `1Graphic_1TextBottom` | 957×639, texto embaixo | dica (3 linhas) |
+| 2 | `1Text` | sem desenho | longa |
+| 3 | `Speller_6Row_1TextDyn` | sem desenho | longa |
+| 4 | `1Graphic_2Text2Row` (título em `Text1`, texto em `Text2`) | régua | dica |
+| 5 | `1Graphic_2Text2Row` | 957×639, texto embaixo | longa |
+| 6 | `1Graphic_1TextTop_1TextBottom` (`Title_Text`, `Description_Text`) | régua | longa |
+
+**O tamanho dos textos:** `tools/cabe.js` quebra o texto como a central,
+com a fonte da própria interface (o `BMWTALG.ttf` de
+`/mnt/dataro/data/hmi/common/font` na central, que não vem neste
+repositório), e as linhas batem com as fotos. Com `BMW_FONT` apontando para
+ela, `tools/teste.js` confere que cada dica cabe em 3 linhas.
+
 Os itens são os do Mapas no painel, com dicas de exemplo. Apertar um item
 não faz nada: o app só mostra.
 
@@ -84,6 +107,7 @@ desligar.
 - `tools/gerar.js`: escreve o uiDescription, os textos e o `application.json`
   a partir de `src/variantes.js` (`node tools/gerar.js`).
 - `tools/desenhos.swift`: as imagens de `package/imagens` (`swift tools/desenhos.swift package/imagens`).
+- `tools/cabe.js`: em quantas linhas um texto quebra na prévia (`BMW_FONT=... node tools/cabe.js "texto"`).
 - `tools/teste.js`: testa o app no computador, com um oap-sdk de mentira
   (`node tools/teste.js`).
 

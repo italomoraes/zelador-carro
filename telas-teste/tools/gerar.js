@@ -34,7 +34,7 @@ function estados() {
                 celulas: { Text: 'Cada botão abre uma versão da tela de dicas. Gire o botão sobre os itens e veja se a explicação aparece.' } }
         ].concat(VARIANTES.map((v) => ({
             id: botao(v).id, nome: botao(v).nome, tipo: 'button', widget: 'LT_Button_1Row', foco: 3,
-            celulas: { Text: `Variante ${v.n}: ${estado(v).pecas.map((p) => p.widget.replace(/^LT_(Label|PreviewTable)_/, '')).join(' + ')}${v.imagens ? ` / desenho ${v.imagens}` : ' / desenho pequeno'}${v.dica === 'curta' ? ' / dica curta' : ''}` }
+            celulas: { Text: `Variante ${v.n}: ${estado(v).pecas.map((p) => p.widget.replace(/^LT_(Label|PreviewTable)_/, '')).join(' + ')}${!estado(v).pecas.some((p) => p.desenho) ? ' / sem desenho' : v.imagens ? ` / desenho ${v.imagens}` : ' / desenho pequeno'}${v.dica ? ` / dica ${v.dica}` : ''}` }
         }))) }]
     };
     const variantes = VARIANTES.map((v) => {

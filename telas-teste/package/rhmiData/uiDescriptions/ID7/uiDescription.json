@@ -83,7 +83,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 2: 1Graphic_1Text2Row / desenho cima",
+                "value": "Variante 2: 1Text / sem desenho / dica longa",
                 "type": "Text"
               }
             }
@@ -105,7 +105,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 3: 1Graphic_1Text3Row / desenho cima",
+                "value": "Variante 3: Speller_6Row_1TextDyn / sem desenho / dica longa",
                 "type": "Text"
               }
             }
@@ -127,7 +127,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 4: Left_1Graphic_1Text_Bottom / desenho pequeno / dica curta",
+                "value": "Variante 4: 1Graphic_2Text2Row / desenho regua",
                 "type": "Text"
               }
             }
@@ -149,7 +149,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 5: 1Graphic_1TextBottom / desenho regua",
+                "value": "Variante 5: 1Graphic_2Text2Row / desenho baixo / dica longa",
                 "type": "Text"
               }
             }
@@ -171,7 +171,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 6: Left_1Graphic_1Text_Bottom / desenho regua / dica curta",
+                "value": "Variante 6: 1Graphic_1TextTop_1TextBottom / desenho regua / dica longa",
                 "type": "Text"
               }
             }

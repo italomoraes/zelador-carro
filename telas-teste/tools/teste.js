@@ -50,6 +50,19 @@ confere(fs.existsSync(path.join(PKG, 'rhmiData/variantGroups/Common/images', app
 VARIANTES.forEach((v) => ITENS.forEach((it, i) => { const n = conteudo(v, i).imagem; confere(fs.existsSync(path.join(PKG, 'imagens', `${n}.png`)), `imagem ${n}.png`); }));
 const PNGS = fs.readdirSync(path.join(PKG, 'imagens')).filter((n) => /\.png$/.test(n));
 
+/* As dicas cabem nas 3 linhas da prévia (a central corta o resto no meio da
+ * letra). Precisa da fonte da interface em BMW_FONT; sem ela, só avisa. */
+if (process.env.BMW_FONT) {
+    const cabe = require('./cabe.js');
+    const fonte = cabe.carregaFonte(process.env.BMW_FONT);
+    ITENS.forEach((it) => {
+        const q = cabe.quebra(fonte, it.dica);
+        confere(q.linhas.length <= 3 && !q.faltam.length, `a dica de "${it.nome}" cabe em 3 linhas (tem ${q.linhas.length}: ${q.linhas.join(' | ')})`);
+    });
+} else {
+    console.log('BMW_FONT não definido: o tamanho das dicas não foi conferido');
+}
+
 /* 2. O app com um oap-sdk de mentira. */
 const chamadas = [];
 class Comp extends EventEmitter {
@@ -126,6 +139,10 @@ const espera = () => new Promise((r) => setTimeout(r, 30));
             e.pecas.forEach((p) => {
                 const t = chamadas.find((c) => c.nome === p.nome && c.cell === (p.celTexto || 'Text'));
                 confere(p.texto ? t && t.value.includes(conteudo(v, i).texto) : !t, `variante ${v.n}, item ${i}, ${p.widget}: texto`);
+                if (p.celTitulo) {
+                    const ti = chamadas.find((c) => c.nome === p.nome && c.cell === p.celTitulo);
+                    confere(ti && ti.value === ITENS[i].nome, `variante ${v.n}, item ${i}, ${p.widget}: título`);
+                }
                 const g = chamadas.find((c) => c.nome === p.nome && c.cell === (p.celDesenho || 'Graphic'));
                 confere(p.desenho ? g && g.type === 'ResourceId' && g.value === path.join(tmp, `${conteudo(v, i).imagem}.png`) : !g,
                     `variante ${v.n}, item ${i}, ${p.widget}: desenho`);

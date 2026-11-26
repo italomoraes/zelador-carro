@@ -83,7 +83,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="312" name="ContentPreview">
-            <component id="1220" type="preview" widget="LT_PreviewTable_1Graphic_1Text2Row"/>
+            <component id="1220" type="preview" widget="LT_PreviewTable_1Text"/>
         </layoutGroup>
         <layoutGroup id="125" name="List">
             <property id="3" value="1"/>
@@ -118,7 +118,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="313" name="ContentPreview">
-            <component id="1320" type="preview" widget="LT_PreviewTable_1Graphic_1Text3Row"/>
+            <component id="1320" type="preview" widget="LT_PreviewTable_Speller_6Row_1TextDyn"/>
         </layoutGroup>
         <layoutGroup id="127" name="List">
             <property id="3" value="1"/>
@@ -153,7 +153,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="314" name="ContentPreview">
-            <component id="1420" type="preview" widget="LT_PreviewTable_Left_1Graphic_1Text_Bottom"/>
+            <component id="1420" type="preview" widget="LT_PreviewTable_1Graphic_2Text2Row"/>
         </layoutGroup>
         <layoutGroup id="129" name="List">
             <property id="3" value="1"/>
@@ -188,7 +188,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="315" name="ContentPreview">
-            <component id="1520" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
+            <component id="1520" type="preview" widget="LT_PreviewTable_1Graphic_2Text2Row"/>
         </layoutGroup>
         <layoutGroup id="131" name="List">
             <property id="3" value="1"/>
@@ -223,7 +223,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="316" name="ContentPreview">
-            <component id="1620" type="preview" widget="LT_PreviewTable_Left_1Graphic_1Text_Bottom"/>
+            <component id="1620" type="preview" widget="LT_PreviewTable_1Graphic_1TextTop_1TextBottom"/>
         </layoutGroup>
         <layoutGroup id="133" name="List">
             <property id="3" value="1"/>
