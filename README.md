@@ -59,6 +59,12 @@ receptor estão em `ferramenta/`. Para outro par, instale o receptor
    Os arquivos do "Salvar logs" voltam a `.tar.gz` com
    `python3 -I receptor/abre_salvo.py ~/zelador-carro/recebidos/coleta/salvo-*.txt`,
    que confere o tamanho e o sha256.
+4. **Aviso no iPhone:** quando chega um "Salvar logs", o receptor cria um
+   lembrete na lista "Zelador" do app Lembretes ("Logs do carro recebidos
+   (HH:MM, N MB)"), e o iCloud o leva ao iPhone, que toca uns 30 s depois. Os
+   lembretes anteriores da lista ficam concluídos. Na primeira vez o macOS
+   pergunta se o receptor pode controlar o Lembretes: permita. Para desligar,
+   ponha `--sem-aviso` nos argumentos do LaunchAgent.
 
 ## Desenvolver
 

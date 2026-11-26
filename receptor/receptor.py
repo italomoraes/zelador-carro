@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 """receptor do zelador-carro: recebe por HTTPS o que a central manda e guarda.
 
-    python3 receptor.py [--pasta DIR] [--porta N]
+    python3 receptor.py [--pasta DIR] [--porta N] [--sem-aviso]
 
 Na pasta (padrão ~/zelador-carro): receptor.pem e receptor.key (o
 certificado que a ferramenta do carro leva, instalar.sh os cria),
@@ -13,6 +13,12 @@ POST /arquivo com X-Zelador-Carro (o id do carro), X-Zelador-Nome
 X-Zelador-Gzip: confere tudo, grava (o mesmo nome com o mesmo conteúdo de
 novo só é confirmado) e responde {"ok": true, "sha256": ...}; só então o
 carro apaga o seu. Qualquer outra coisa recebe um erro 4xx e nada é gravado.
+
+Quando chega um "Salvar logs" do Mapas no painel (coleta/salvo-woc-logs-*.txt),
+cria um lembrete na lista "Zelador" do app Lembretes, que o iCloud leva ao
+iPhone: "Logs do carro recebidos (HH:MM, N MB)". Os lembretes antigos da lista
+são marcados como concluídos. Na primeira vez o macOS pergunta se o receptor
+pode controlar o Lembretes. --sem-aviso desliga.
 """
 import hashlib
 import http.server
@@ -22,7 +28,9 @@ import re
 import secrets
 import shutil
 import ssl
+import subprocess
 import sys
+import threading
 import time
 import zlib
 
@@ -31,6 +39,49 @@ MAX_CONTEUDO = 256 << 20
 MIN_LIVRE = 1 << 30
 NOME = re.compile(r'(escuta|coleta)/([A-Za-z0-9][A-Za-z0-9._-]{0,120}\.txt)')
 ID = re.compile(r'[0-9a-f]{64}')
+SALVO = re.compile(r'salvo-woc-logs-\d{8}T\d{6}Z(-[0-9a-f]{8})?\.txt')
+FIM = re.compile(rb'^# fim: (\d+) bytes, sha256 [0-9a-f]{64}$', re.M)
+LISTA = 'Zelador'
+# o texto e a lista vão como argumentos, nunca dentro do script; o alarme
+# fica 30 s à frente, o tempo de o iCloud levar o lembrete ao iPhone
+LEMBRETE = '''on run argv
+    set titulo to item 1 of argv
+    set nomeLista to item 2 of argv
+    tell application "Reminders"
+        if not (exists list nomeLista) then make new list with properties {name:nomeLista}
+        set l to list nomeLista
+        repeat with r in (reminders of l whose completed is false)
+            set completed of r to true
+        end repeat
+        make new reminder at end of l with properties {name:titulo, remind me date:((current date) + 30)}
+    end tell
+end run'''
+
+
+def texto_aviso(conteudo, quando=None):
+    """"Logs do carro recebidos (HH:MM, N MB)": o tamanho do .tar.gz, do rodapé."""
+    m = FIM.search(conteudo[-4096:])
+    hora = time.strftime('%H:%M', time.localtime(quando))
+    if not m:
+        return 'Logs do carro recebidos (%s)' % hora
+    mb = ('%.1f' % (int(m.group(1)) / 1048576.0)).replace('.', ',')
+    return 'Logs do carro recebidos (%s, %s MB)' % (hora, mb)
+
+
+def avisa_lembrete(titulo):
+    """Cria o lembrete pelo osascript; erros só vão para o log."""
+    try:
+        r = subprocess.run(['osascript', '-e', LEMBRETE, titulo, LISTA], stdin=subprocess.DEVNULL,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=180,
+                           universal_newlines=True)
+    except (OSError, subprocess.TimeoutExpired) as e:
+        log('aviso no Lembretes falhou: %s' % e)
+        return False
+    if r.returncode != 0:
+        log('aviso no Lembretes falhou: %s' % (r.stderr.strip() or r.returncode))
+        return False
+    log('aviso no Lembretes: %s' % titulo)
+    return True
 
 
 def log(msg):
@@ -124,6 +175,9 @@ class Recebedor(http.server.BaseHTTPRequestHandler):
         os.replace(tmp, destino)
         log('recebido %s (%d KB)' % (os.path.relpath(destino, pasta), (len(conteudo) + 1023) // 1024))
         self.responde(200, {'ok': True, 'sha256': sha})
+        if self.server.aviso and m.group(1) == 'coleta' and SALVO.fullmatch(os.path.basename(destino)):
+            # numa thread: a primeira vez o macOS pergunta, e isso não segura o carro
+            threading.Thread(target=self.server.aviso, args=(texto_aviso(conteudo),), daemon=True).start()
 
 
 class Servidor(http.server.ThreadingHTTPServer):
@@ -131,9 +185,10 @@ class Servidor(http.server.ThreadingHTTPServer):
     cliente parado não segura os outros."""
     daemon_threads = True
 
-    def __init__(self, endereco, pasta):
+    def __init__(self, endereco, pasta, aviso=None):
         super().__init__(endereco, Recebedor)
         self.pasta = pasta
+        self.aviso = aviso
         self.ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         self.ctx.minimum_version = ssl.TLSVersion.TLSv1_2
         self.ctx.load_cert_chain(os.path.join(pasta, 'receptor.pem'), os.path.join(pasta, 'receptor.key'))
@@ -151,15 +206,21 @@ class Servidor(http.server.ThreadingHTTPServer):
             tls.close()
 
 
-def servidor(pasta, porta, endereco=''):
-    return Servidor((endereco, porta), pasta)
+def servidor(pasta, porta, endereco='', aviso=None):
+    """aviso(titulo): chamado quando chega um "Salvar logs"; None, nenhum."""
+    return Servidor((endereco, porta), pasta, aviso)
 
 
 def main(argv):
     pasta = os.path.expanduser('~/zelador-carro')
     porta = 47321
+    aviso = avisa_lembrete if sys.platform == 'darwin' else None
     i = 1
     while i < len(argv):
+        if argv[i] == '--sem-aviso':
+            aviso = None
+            i += 1
+            continue
         if argv[i] == '--pasta' and i + 1 < len(argv):
             pasta = argv[i + 1]
         elif argv[i] == '--porta' and i + 1 < len(argv):
@@ -168,7 +229,7 @@ def main(argv):
             raise SystemExit(__doc__)
         i += 2
     os.umask(0o077)
-    srv = servidor(pasta, porta)
+    srv = servidor(pasta, porta, aviso=aviso)
     log('receptor em :%d, guardando em %s' % (porta, os.path.join(pasta, 'recebidos')))
     srv.serve_forever()
 

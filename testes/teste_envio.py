@@ -574,6 +574,47 @@ def testa_salvos(zelador, abre_salvo, tmp, conf):
     return 'salvo-woc-logs-20261125T170000Z.txt', b
 
 
+def testa_aviso(zelador, receptor, tmp, ctx, cid, conf, salvo):
+    """O lembrete: só para o Salvar logs que chega pela primeira vez."""
+    ok('texto do aviso: a hora e o tamanho do rodapé',
+       receptor.texto_aviso(b'AAAA\n# fim: 3355443 bytes, sha256 ' + b'a' * 64 + b'\n', 0) ==
+       'Logs do carro recebidos (%s, 3,2 MB)' % time.strftime('%H:%M', time.localtime(0)))
+    ok('sem rodapé: só a hora', receptor.texto_aviso(b'AAAA\n', 0) ==
+       'Logs do carro recebidos (%s)' % time.strftime('%H:%M', time.localtime(0)))
+    pasta = os.path.join(tmp, 'casa-aviso')
+    certificado(pasta, '127.0.0.1')
+    avisos = []
+    chamou = threading.Event()
+
+    def aviso(titulo):
+        avisos.append(titulo)
+        chamou.set()
+
+    srv = receptor.servidor(pasta, 0, '127.0.0.1', aviso=aviso)
+    threading.Thread(target=srv.serve_forever, daemon=True).start()
+    try:
+        c = dict(conf, porta=srv.server_address[1])
+        ctx2 = zelador.contexto(os.path.join(pasta, 'receptor.pem'))
+        outro = os.path.join(tmp, 'aviso', 'mapas-log-x.txt')
+        escreve(outro, b'linha\n')
+        zelador.manda(c, ctx2, cid, 'coleta', 'mapas-log-x.txt', outro)
+        nome = os.path.basename(salvo)
+        copia = os.path.join(tmp, 'aviso', nome)
+        escreve(copia, ler(salvo))
+        zelador.manda(c, ctx2, cid, 'coleta', nome, copia)
+        chamou.wait(5)
+        ok('chega um Salvar logs: um aviso, com o tamanho', len(avisos) == 1 and
+           avisos[0].startswith('Logs do carro recebidos (') and avisos[0].endswith(' MB)'))
+        chamou.clear()
+        escreve(copia, ler(salvo))
+        zelador.manda(c, ctx2, cid, 'coleta', nome, copia)
+        chamou.wait(1)
+        ok('o mesmo de novo (o carro reenviou): sem aviso', len(avisos) == 1)
+    finally:
+        srv.shutdown()
+        srv.server_close()
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix='zelador-teste-')
     try:
@@ -728,6 +769,7 @@ def main():
         tgz = chegou[:-len('.txt')] + '.tar.gz'
         ok('o Salvar logs chega em casa e abre_salvo.py grava o .tar.gz igual',
            r == 0 and os.path.exists(tgz) and ler(tgz) == dados_salvo)
+        testa_aviso(zelador, receptor, tmp, ctx, cid, conf, chegou)
         srv.shutdown()
         srv.server_close()
         escreve(os.path.join(p['escuta'], 'escuta-e.txt'), b'sem receptor\n')
