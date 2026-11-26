@@ -1,6 +1,21 @@
 {
   "schema": 1,
   "components": [
-    { "id": "zelador-carro", "kind": "tool", "path": "ferramenta" }
+    {
+      "id": "zelador-carro",
+      "kind": "tool",
+      "path": "ferramenta"
+    },
+    {
+      "id": "italo_telas_teste",
+      "kind": "app",
+      "path": "telas-teste",
+      "build": "unit",
+      "mguHmi": [
+        "ID7"
+      ],
+      "title": "Teste de telas (Mapas no painel)",
+      "description": "Teste, num app à parte: as telas da BMW com uma explicação à direita, para o menu do Mapas no painel. Não muda nenhuma configuração. Remova depois do teste."
+    }
   ]
 }

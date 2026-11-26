@@ -1,0 +1,312 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// O ciclo de vida (pontos de entrada, visibilidade, eventos de foco e de
+// pressão, desligamento) segue o robertn_waze_cluster e a robertn_store de
+// Robert Nisipeanu (GPL-3.0-or-later).
+/**
+ * italo_telas_teste: um app só para experimentar, sem mexer no Mapas no
+ * painel, se as telas da BMW com uma explicação à direita funcionam num app
+ * de fora (src/variantes.js). A entrada lista as variantes; cada uma mostra
+ * os itens do Mapas no painel e, quando o seletor destaca um item, troca a
+ * explicação e o desenho ao lado.
+ *
+ * Não faz nada além de mostrar: nenhum botão muda configuração. Anota o que
+ * acontece (início, telas abertas, focos, erros) no log do app e em
+ * /dev/shm/italo_telas_teste/registro.txt (RAM: some ao desligar), que o
+ * puxar-pelo-hotspot.sh copia.
+ */
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const OnlineApp = require('oap-sdk/src/core/OnlineApp.js');
+const logging = require('oap-sdk/src/logging/logging');
+const { ITENS, VARIANTES, ENTRADA, estado, botao } = require('./variantes.js');
+
+const logger = logging.getSDKLogger();
+const PASTA = '/dev/shm/italo_telas_teste';
+const REGISTRO = path.join(PASTA, 'registro.txt');
+const REGISTRO_MAX = 512 * 1024;
+const VALOR = 0;       // o valor de um evento de foco no parameterMap
+const DEDUPE_MS = 400;
+
+function isTrue(raw) {
+    return raw === true || raw === 'true' || raw === 1 || raw === '1';
+}
+
+/* A pasta em /dev/shm (um nível só: sem o recursive, que o Node antigo não tem). */
+function criaPasta() {
+    try {
+        fs.mkdirSync(PASTA);
+    } catch (e) {
+        if (e.code !== 'EEXIST') {
+            throw e;
+        }
+    }
+}
+
+/* Uma linha no log do app e no registro em RAM. */
+function anota(msg) {
+    logger.info(`telas: ${msg}`);
+    try {
+        criaPasta();
+        fs.chmodSync(PASTA, 0o755);
+        let tam = 0;
+        try {
+            tam = fs.statSync(REGISTRO).size;
+        } catch (e) {
+            /* ainda não existe */
+        }
+        if (tam < REGISTRO_MAX) {
+            fs.appendFileSync(REGISTRO, `${new Date().toISOString()} ${msg}\n`);
+        }
+    } catch (e) {
+        /* sem /dev/shm: só o log do app */
+    }
+}
+
+class TelasTeste extends OnlineApp {
+    constructor() {
+        super();
+        this._comp = {};
+        this._porId = {};
+        this._focoPorId = {};
+        this._ultimo = {};
+        this._imagens = {};
+        this._visivel = false;
+        this._saindo = null;
+        this.on('initialized', () => this._iniciar().catch((err) => anota(`ERRO no início: ${err && err.message}`)));
+        this.on('shutdown', (motivo) => this._desligar(motivo));
+        this.on('error', (err) => anota(`erro do OnlineApp: ${err && err.message}`));
+        this.on('entryPointExecute', (uuid) => this._abrirEntrada(uuid));
+        this.on('changeVisibility', (d) => {
+            if (d && d.visible === false) {
+                this._mostra(false);
+            }
+        });
+    }
+
+    _iniciar() {
+        anota(`início ${this._packageJson && this._packageJson.version}, motivo ${this.startReason}`);
+        if (!this.rhmiApplication) {
+            anota('sem RhmiApplication neste início');
+            return this.initialized();
+        }
+        const primeiro = ['ENTRY_POINT', 'LUM', 'BOOKMARK', 'START_WIDGET', 'TRIGGER_HMI', 'SPEECH_COMMAND']
+            .includes(((this.getVisibilityData && this.getVisibilityData()) || {}).reason || this.startReason);
+        return this._montar()
+            .then(() => this._registrarEntrada())
+            .then(() => {
+                if (primeiro) {
+                    this.registerActive();
+                }
+                return this.initialized();
+            })
+            .then(() => {
+                if (primeiro) {
+                    this._mostra(true);
+                }
+                const ultimo = this.getLastExecutedEntryPointUuid && this.getLastExecutedEntryPointUuid();
+                return ultimo ? this._abrirEntrada(ultimo) : undefined;
+            });
+    }
+
+    /* Acha os estados e componentes; o que faltar fica anotado e o resto segue. */
+    _montar() {
+        const rhmi = this.rhmiApplication;
+        this._entrada = rhmi.getByName(ENTRADA.nome);
+        if (!this._entrada) {
+            return Promise.reject(new Error(`uiDescription sem ${ENTRADA.nome}`));
+        }
+        this._copiarImagens();
+        const estados = [this._entrada];
+        VARIANTES.forEach((v) => {
+            const e = estado(v);
+            const st = rhmi.getByName(e.nome);
+            anota(`variante ${v.n} (${v.widget} / ${v.previa || 'embaixo'}): estado ${st ? 'achado' : 'FALTANDO'}`);
+            if (st) {
+                estados.push(st);
+                st.on('visible', (ev) => {
+                    const vis = isTrue(ev && ev.visible);
+                    anota(`variante ${v.n} ${vis ? 'visível' : 'escondida'}`);
+                    if (vis) {
+                        this._mostra(true);
+                    }
+                });
+            }
+            this._achar(e.texto.nome);
+            if (v.previa) {
+                this._achar(e.imagem.nome);  /* a 6 não tem desenho */
+            }
+            ITENS.forEach((it, i) => {
+                const nome = e.item(i).nome;
+                if (this._achar(nome)) {
+                    this._liga(nome, () => anota(`variante ${v.n}: apertou "${it.nome}" (só mostra)`));
+                    this._ligaFoco(nome, (foco) => {
+                        if (foco) {
+                            anota(`variante ${v.n}: foco em "${it.nome}"`);
+                            this._previa(v, i);
+                        }
+                    });
+                }
+            });
+            const b = botao(v).nome;
+            if (this._achar(b)) {
+                this._liga(b, () => this._abrir(e.nome));
+            }
+        });
+        rhmi.on('userEvent', (ev) => {
+            const id = Number(ev && ev.sourceId);
+            if (ev && ev.eventType === 'ACTION' && this._porId[id]) {
+                this._aperta(this._porId[id].nome, this._porId[id].fn);
+            }
+            if (ev && ev.eventType === 'FOCUS' && this._focoPorId[id]) {
+                this._focoPorId[id](isTrue((ev.parameterMap || {})[VALOR]));
+            }
+        });
+        rhmi.on('applicationStackChanged', (pilha) => {
+            const chaves = pilha && typeof pilha === 'object' ? Object.keys(pilha) : [];
+            if (chaves.length) {
+                this._mostra(Object.prototype.hasOwnProperty.call(pilha, 'ROOT_APP'));
+            }
+        });
+        rhmi.on('restoreHmi', () => anota('RESTORE_HMI'));
+        return Promise.all(estados.map((st) => Promise.resolve(st.updateResources())
+            .catch((err) => anota(`updateResources: ${err && err.message}`))))
+            .then(() => {
+                VARIANTES.forEach((v) => this._previa(v, 0));
+                anota('telas prontas');
+            });
+    }
+
+    _achar(nome) {
+        const c = this.rhmiApplication.getByName(nome);
+        if (!c) {
+            anota(`componente FALTANDO: ${nome}`);
+            return null;
+        }
+        this._comp[nome] = c;
+        return c;
+    }
+
+    /* Os desenhos vão para a RAM, legíveis pela interface (como o QR code do Mapas no painel). */
+    _copiarImagens() {
+        const origem = path.join(__dirname, '..', 'imagens');
+        try {
+            criaPasta();
+            fs.chmodSync(PASTA, 0o755);
+            fs.readdirSync(origem).filter((n) => /\.png$/.test(n)).forEach((n) => {
+                const destino = path.join(PASTA, n);
+                fs.copyFileSync(path.join(origem, n), destino);
+                fs.chmodSync(destino, 0o644);
+                this._imagens[n.replace(/\.png$/, '')] = destino;
+            });
+            anota(`imagens: ${Object.keys(this._imagens).join(', ') || 'nenhuma'}`);
+        } catch (err) {
+            anota(`imagens: ${err && err.message}`);
+        }
+    }
+
+    /* A explicação e o desenho do item i na variante v. */
+    _previa(v, i) {
+        const e = estado(v);
+        const it = ITENS[i];
+        const texto = this._comp[e.texto.nome];
+        const imagem = this._comp[e.imagem.nome];
+        if (texto) {
+            Promise.resolve(texto.setValue(0, 'Text', v.previa ? it.dica : `${it.nome}: ${it.dica}`, 'Text'))
+                .catch((err) => anota(`variante ${v.n}: texto: ${err && err.message}`));
+        }
+        if (imagem && this._imagens[it.imagem]) {
+            Promise.resolve(imagem.setValue(0, 'Graphic', this._imagens[it.imagem], 'ResourceId'))
+                .catch((err) => anota(`variante ${v.n}: imagem: ${err && err.message}`));
+        }
+    }
+
+    _abrir(nome) {
+        anota(`abrindo ${nome}`);
+        Promise.resolve(this.rhmiApplication.openState(nome))
+            .then(() => anota(`abriu ${nome}`))
+            .catch((err) => anota(`openState ${nome} falhou: ${err && err.message}`));
+    }
+
+    _liga(nome, fn) {
+        const c = this._comp[nome];
+        try {
+            this._porId[Number(c.getId())] = { nome, fn };
+        } catch (e) {
+            /* sem id: só os eventos do componente */
+        }
+        c.on('action', () => this._aperta(nome, fn));
+    }
+
+    _ligaFoco(nome, fn) {
+        const c = this._comp[nome];
+        try {
+            this._focoPorId[Number(c.getId())] = fn;
+        } catch (e) {
+            /* sem id */
+        }
+        c.on('focus', (ev) => fn(isTrue(ev && ev.value)));
+    }
+
+    _aperta(nome, fn) {
+        const agora = Date.now();
+        if (agora - (this._ultimo[nome] || 0) < DEDUPE_MS) {
+            return;
+        }
+        this._ultimo[nome] = agora;
+        try {
+            fn();
+        } catch (err) {
+            anota(`${nome}: ${err && err.message}`);
+        }
+    }
+
+    _registrarEntrada() {
+        const desc = (this.appDescription && this.appDescription.application.entryPoints) || [];
+        const nosso = this.getEntryPoints().find((ep) => desc.some((d) => d.uuid === ep.getDescription().uuid));
+        if (!nosso) {
+            return Promise.reject(new Error('nenhum ponto de entrada entregue pelo gerenciador'));
+        }
+        const d = nosso.getDescription();
+        return nosso.init()
+            .then(() => this.rhmiApplication.mapEntryState(d.uuid, this._entrada))
+            .then(() => nosso.setAvailability('ENABLED'))
+            .then(() => anota('ponto de entrada ligado'));
+    }
+
+    _abrirEntrada(uuid) {
+        if (this._saindo || !this.rhmiApplication || !uuid) {
+            return Promise.resolve();
+        }
+        this._mostra(true);
+        return Promise.resolve(this.rhmiApplication.openEntryState(uuid))
+            .catch((err) => anota(`openEntryState falhou: ${err && err.message}`));
+    }
+
+    _mostra(vis) {
+        if (this._saindo || this._visivel === vis) {
+            return;
+        }
+        this._visivel = vis;
+        if (!this._initialized || !this._appStatusService) {
+            return;
+        }
+        const r = vis ? [this.registerActive(), this.registerHmiVisible()] : [this.unregisterHmiVisible(), this.registerInactive()];
+        r.forEach((p) => Promise.resolve(p).catch((err) => anota(`status do app: ${err && err.message}`)));
+    }
+
+    _desligar(motivo) {
+        if (this._saindo) {
+            return this._saindo;
+        }
+        anota(`desligando: ${JSON.stringify(motivo)}`);
+        this._saindo = Promise.resolve()
+            .then(() => this.destroyBundles().catch(() => undefined))
+            .then(() => process.exit(0));
+        return this._saindo;
+    }
+}
+
+const app = new TelasTeste();
+app.start().catch((err) => anota(`não iniciou: ${err && err.message}`));

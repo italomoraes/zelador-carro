@@ -74,6 +74,14 @@ receptor estão em `ferramenta/`. Para outro par, instale o receptor
 - Testes do envio, da coleta e do receptor, de ponta a ponta em 127.0.0.1:
   `python3 -I testes/teste_envio.py`.
 
+## Teste de telas
+
+A fonte também lista um app à parte, **Teste de telas** (`telas-teste/`), que
+experimenta as telas da BMW com uma explicação à direita para o menu do Mapas
+no painel. Ele não depende da ferramenta e não muda nenhuma configuração; o
+[`telas-teste/README.md`](telas-teste/README.md) explica o teste.
+
 ## Licença
 
-MIT ([`LICENSE`](LICENSE)).
+MIT ([`LICENSE`](LICENSE)), menos `telas-teste/`, que é GPL-3.0-or-later
+([`telas-teste/LICENSE`](telas-teste/LICENSE)).

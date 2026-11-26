@@ -1,0 +1,38 @@
+{
+  "name": "italo_telas_teste",
+  "version": "0.0.1",
+  "description": "Teste de telas: experimenta, num app à parte, as telas da BMW com uma explicação à direita, para o menu do Mapas no painel. Remova depois do teste.",
+  "private": false,
+  "main": "javascript/runner.js",
+  "oapAppSettings": {
+    "maxDiskUsage": 5242880,
+    "cpuLimit": 20,
+    "memoryThresholdKB": 102400,
+    "priority": "PRIO_MEDIUM",
+    "visibility": "FOREGROUND",
+    "latencyClass": "FOREGROUND",
+    "loggingId": "ITTS",
+    "userLoginRequired": false,
+    "backgroundPriority": 150,
+    "someipManifest": "manifest.json"
+  },
+  "files": [
+    "config",
+    "rhmiData",
+    "imagens",
+    "package.json",
+    "npm-shrinkwrap.json",
+    "permissions.json",
+    "javascript",
+    "manifest.json"
+  ],
+  "dependencies": {
+    "oap-sdk": "24.10.2"
+  },
+  "engines": {
+    "node": ">=8.7.0"
+  },
+  "author": "Italo Moraes",
+  "license": "GPL-3.0-or-later",
+  "mguLocalOnly": true
+}

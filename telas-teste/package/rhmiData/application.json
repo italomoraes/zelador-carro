@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.3.0",
+  "application": {
+    "uuid": "26f89071-6326-4283-a223-b454721b5165",
+    "type": "OnlineApp",
+    "name": "italo_telas_teste",
+    "vendor": "Italo Moraes",
+    "version": "0.0.1",
+    "defaultLanguage": "en_GB",
+    "uiDescriptions": [
+      {
+        "applicationFilePath": "./uiDescriptions/ID7/application.xml",
+        "uiDescriptionFilePath": "./uiDescriptions/ID7/uiDescription.json",
+        "hmi": [
+          "ID7"
+        ]
+      }
+    ],
+    "stringBundleUuid": "1b44a929-0597-460a-8141-201286c1a399",
+    "resourceBundleUuid": "3498781a-80e1-48ca-8db4-7aec2d7dd7f2",
+    "variantGroups": [
+      {
+        "stringsPath": "./variantGroups/Common/texts",
+        "resourcesPath": "./variantGroups/Common/images",
+        "hmi": [
+          "ID7"
+        ],
+        "brands": [
+          "BMW"
+        ]
+      }
+    ],
+    "entryPoints": [
+      {
+        "name": "italo_telas_teste",
+        "uuid": "fa8df646-325f-4b2a-b899-e60a0b8ef642",
+        "textId": "SID_TELAS_TITLE",
+        "icon": "italo_telas_teste_icon.png",
+        "insertionStateId": 20974,
+        "insertionFocusId": 2,
+        "insertionMode": "INSERT_BELOW",
+        "insertionOrder": 0,
+        "insertionPriority": 0,
+        "previewType": "NONE",
+        "bookmarkable": true,
+        "private": null,
+        "appearance": "DEFAULT",
+        "isGroupHeader": false,
+        "insertionGroup": 0
+      }
+    ]
+  }
+}
