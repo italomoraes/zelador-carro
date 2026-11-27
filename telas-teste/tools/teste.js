@@ -47,7 +47,7 @@ VARIANTES.forEach((v) => {
 });
 const app = JSON.parse(fs.readFileSync(path.join(PKG, 'rhmiData/application.json'), 'utf8')).application;
 confere(fs.existsSync(path.join(PKG, 'rhmiData/variantGroups/Common/images', app.entryPoints[0].icon)), 'ícone do ponto de entrada existe');
-VARIANTES.forEach((v) => ITENS.forEach((it, i) => { const n = conteudo(v, i).imagem; confere(fs.existsSync(path.join(PKG, 'imagens', `${n}.png`)), `imagem ${n}.png`); }));
+VARIANTES.forEach((v) => ITENS.forEach((it, i) => [undefined, -1, 0, 1, 2, 3].forEach((r) => { const n = conteudo(v, i, r).imagem; confere(fs.existsSync(path.join(PKG, 'imagens', `${n}.png`)), `imagem ${n}.png`); })));
 const PNGS = fs.readdirSync(path.join(PKG, 'imagens')).filter((n) => /\.png$/.test(n));
 
 /* As dicas cabem nas 3 linhas da prévia (a central corta o resto no meio da
@@ -58,6 +58,10 @@ if (process.env.BMW_FONT) {
     ITENS.forEach((it) => {
         const q = cabe.quebra(fonte, it.dica);
         confere(q.linhas.length <= 3 && !q.faltam.length, `a dica de "${it.nome}" cabe em 3 linhas (tem ${q.linhas.length}: ${q.linhas.join(' | ')})`);
+        (it.opcoesDica || []).concat(it.cabecalho || []).forEach((d) => {
+            const q2 = cabe.quebra(fonte, d);
+            confere(q2.linhas.length <= 3 && !q2.faltam.length, `a explicação "${d.slice(0, 30)}…" cabe em 3 linhas (tem ${q2.linhas.length})`);
+        });
         const l = cabe.quebra(fonte, it.longa);
         confere(l.linhas.length <= 9 && !l.faltam.length, `a explicação longa de "${it.nome}" cabe em 9 linhas (tem ${l.linhas.length})`);
     });
@@ -133,12 +137,28 @@ const espera = () => new Promise((r) => setTimeout(r, 30));
         confere(chamadas.some((c) => c.abre === e.nome), `o botão abre a variante ${v.n}`);
         for (let i = 0; i < ITENS.length; i++) {
             chamadas.length = 0;
-            if (i % 2) {
+            const lista = v.porOpcao && ITENS[i].tipo === 'lista';
+            if (lista) {
+                /* como no carro (0.0.9): a lista manda a opção em parameterMap[2], 4294967295 é o nome */
+                for (let r = 0; r < ITENS[i].opcoes.length; r++) {
+                    chamadas.length = 0;
+                    rhmi.emit('userEvent', { eventType: 'FOCUS', sourceId: nomes[e.item(i).nome], parameterMap: { 2: r } });
+                    await espera();
+                    const p = e.pecas[0];
+                    const t = chamadas.find((c) => c.nome === p.nome && c.cell === p.celTexto);
+                    confere(t && t.value === ITENS[i].opcoesDica[r], `variante ${v.n}: opção ${r} mostra a sua explicação`);
+                    const g = chamadas.find((c) => c.nome === p.nome && c.cell === p.celDesenho);
+                    confere(p.desenho ? g && g.value === path.join(tmp, `${conteudo(v, i, r).imagem}.png`) : !g, `variante ${v.n}: opção ${r} mostra o seu desenho`);
+                }
+                chamadas.length = 0;
+                rhmi.emit('userEvent', { eventType: 'FOCUS', sourceId: nomes[e.item(i).nome], parameterMap: { 2: 4294967295 } });
+            } else if (i % 2) {
                 comps[e.item(i).nome].emit('focus', { value: true });
             } else {
                 rhmi.emit('userEvent', { eventType: 'FOCUS', sourceId: nomes[e.item(i).nome], parameterMap: { 0: true } });
             }
             await espera();
+            const esperado = lista ? conteudo(v, i, -1) : conteudo(v, i);
             const usada = pecaDoItem(v, i);
             if (v.troca === 'preview') {
                 const ultimaTroca = chamadas.filter((c) => c.nome === e.nome && c.prop === 'Preview').pop();
@@ -158,13 +178,13 @@ const espera = () => new Promise((r) => setTimeout(r, 30));
                     return;
                 }
                 const t = chamadas.find((c) => c.nome === p.nome && c.cell === (p.celTexto || 'Text'));
-                confere(p.texto ? t && t.value.includes(conteudo(v, i).texto) : !t, `variante ${v.n}, item ${i}, ${p.widget}: texto`);
+                confere(p.texto ? t && t.value.includes(esperado.texto) : !t, `variante ${v.n}, item ${i}, ${p.widget}: texto`);
                 if (p.celTitulo) {
                     const ti = chamadas.find((c) => c.nome === p.nome && c.cell === p.celTitulo);
                     confere(ti && ti.value === ITENS[i].nome, `variante ${v.n}, item ${i}, ${p.widget}: título`);
                 }
                 const g = chamadas.find((c) => c.nome === p.nome && c.cell === (p.celDesenho || 'Graphic'));
-                confere(p.desenho ? g && g.type === 'ResourceId' && g.value === path.join(tmp, `${conteudo(v, i).imagem}.png`) : !g,
+                confere(p.desenho ? g && g.type === 'ResourceId' && g.value === path.join(tmp, `${esperado.imagem}.png`) : !g,
                     `variante ${v.n}, item ${i}, ${p.widget}: desenho`);
             });
             const ultimo = chamadas.map((c) => !!c.flush).lastIndexOf(true);

@@ -50,6 +50,30 @@ let desenhos: [(String, (CGContext) -> Void)] = [
         let l = CGMutablePath(); l.move(to: CGPoint(x: 128, y: 110)); l.addLine(to: CGPoint(x: 162, y: 110)); l.move(to: CGPoint(x: 150, y: 122)); l.addLine(to: CGPoint(x: 164, y: 110)); l.addLine(to: CGPoint(x: 150, y: 98))
         stroke(c, white, 6, l)
     }),
+    /* As opções do "Mostrar em": o HUD (o para-brisa com a seta), os dois
+     * (o painel e o para-brisa) e nenhum (o painel riscado). */
+    ("hud", { c in
+        let p = CGMutablePath(); p.move(to: CGPoint(x: 40, y: 50)); p.addLine(to: CGPoint(x: 260, y: 50)); p.addLine(to: CGPoint(x: 230, y: 180)); p.addLine(to: CGPoint(x: 70, y: 180)); p.closeSubpath()
+        stroke(c, white, 7, p)
+        let m = CGMutablePath(); m.move(to: CGPoint(x: 125, y: 80)); m.addLine(to: CGPoint(x: 150, y: 140)); m.addLine(to: CGPoint(x: 175, y: 80)); m.addLine(to: CGPoint(x: 150, y: 95)); m.closeSubpath()
+        stroke(c, red, 7, m)
+    }),
+    ("painel-hud", { c in
+        let p = CGMutablePath(); p.move(to: CGPoint(x: 70, y: 130)); p.addLine(to: CGPoint(x: 230, y: 130)); p.addLine(to: CGPoint(x: 210, y: 205)); p.addLine(to: CGPoint(x: 90, y: 205)); p.closeSubpath()
+        stroke(c, white, 6, p)
+        let m = CGMutablePath(); m.move(to: CGPoint(x: 138, y: 145)); m.addLine(to: CGPoint(x: 150, y: 185)); m.addLine(to: CGPoint(x: 162, y: 145)); m.addLine(to: CGPoint(x: 150, y: 153)); m.closeSubpath()
+        stroke(c, red, 5, m)
+        stroke(c, red, 7, CGPath(roundedRect: CGRect(x: 40, y: 15, width: 220, height: 95), cornerWidth: 24, cornerHeight: 24, transform: nil))
+        let n = CGMutablePath(); n.move(to: CGPoint(x: 128, y: 35)); n.addLine(to: CGPoint(x: 150, y: 90)); n.addLine(to: CGPoint(x: 172, y: 35)); n.addLine(to: CGPoint(x: 150, y: 50)); n.closeSubpath()
+        stroke(c, red, 6, n)
+    }),
+    ("nenhum", { c in
+        stroke(c, white, 8, CGPath(roundedRect: CGRect(x: 20, y: 40, width: 260, height: 140), cornerWidth: 30, cornerHeight: 30, transform: nil))
+        let a = CGMutablePath(); a.addArc(center: CGPoint(x: 65, y: 110), radius: 28, startAngle: .pi * 1.2, endAngle: -.pi * 0.2, clockwise: true); a.move(to: CGPoint(x: 263, y: 110)); a.addArc(center: CGPoint(x: 235, y: 110), radius: 28, startAngle: 0, endAngle: .pi * 2, clockwise: false)
+        stroke(c, white, 5, a)
+        let x = CGMutablePath(); x.move(to: CGPoint(x: 40, y: 25)); x.addLine(to: CGPoint(x: 260, y: 195))
+        stroke(c, red, 10, x)
+    }),
     ("logs", { c in
         stroke(c, red, 8, CGPath(roundedRect: CGRect(x: 85, y: 20, width: 130, height: 180), cornerWidth: 12, cornerHeight: 12, transform: nil))
         let l = CGMutablePath(); for y in [160, 135, 110] { l.move(to: CGPoint(x: 110, y: y)); l.addLine(to: CGPoint(x: 190, y: y)) }

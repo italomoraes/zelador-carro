@@ -131,6 +131,19 @@ prévia deixa a direita vazia mesmo com a peça nova preenchida antes.
 
 O app anota os eventos crus da lista, para ver se o foco nas opções chega.
 
+**0.0.9 (27/11):** o valor escolhido aparece embaixo do nome quando as
+opções levam `ItemSelectionText`; escrever `SelectedItem` pelo app não
+basta. A lista aberta manda o foco com o número da opção
+(`parameterMap[2]`, e 4294967295 quando o foco está no nome).
+
+**0.1.0:** cada opção do "Mostrar em" tem a sua explicação e o seu
+desenho, com um tipo de prévia só no menu:
+
+| Variante | Prévia |
+|---|---|
+| 1 | desenho e 3 linhas em tudo, opções incluídas |
+| 2 | só texto em tudo; a explicação longa nos itens e a curta nas opções |
+
 Os itens são os do Mapas no painel, com dicas de exemplo. Apertar um item
 não faz nada: o app só mostra.
 

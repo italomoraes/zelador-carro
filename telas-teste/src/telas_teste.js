@@ -144,7 +144,10 @@ class TelasTeste extends OnlineApp {
                 const c = this._achar(nome);
                 if (c && it.tipo === 'lista') {
                     try {
-                        this._listas[Number(c.getId())] = `V${v.n}`;
+                        this._listas[Number(c.getId())] = { nome: `V${v.n}`, foco: (r) => {
+                            anota(`variante ${v.n}: foco em "${it.nome}", opção ${r}`);
+                            this._previa(v, i, r);
+                        } };
                     } catch (e) {
                         /* sem id */
                     }
@@ -161,6 +164,9 @@ class TelasTeste extends OnlineApp {
                         this._iniciais.push(() => this._escreveValor(v, c, 0));
                     }
                     this._ligaFoco(nome, (foco) => {
+                        if (v.porOpcao && it.tipo === 'lista') {
+                            return; // a lista manda o foco com a opção: tratado no userEvent
+                        }
                         if (foco) {
                             anota(`variante ${v.n}: foco em "${it.nome}"`);
                             this._previa(v, i);
@@ -176,7 +182,12 @@ class TelasTeste extends OnlineApp {
         rhmi.on('userEvent', (ev) => {
             const id = Number(ev && ev.sourceId);
             if (this._listas[id]) {
-                anota(`evento da lista ${this._listas[id]}: ${JSON.stringify(ev).slice(0, 300)}`);
+                anota(`evento da lista ${this._listas[id].nome}: ${JSON.stringify(ev).slice(0, 300)}`);
+                if (ev.eventType === 'FOCUS') {
+                    /* a lista manda a opção em foco em parameterMap[2]; 4294967295 é o nome */
+                    const r = Number((ev.parameterMap || {})[2]);
+                    this._listas[id].foco(r >= 0 && r < 0xFFFFFFFF ? r : -1);
+                }
             }
             if (ev && ev.eventType === 'ACTION' && this._porId[id]) {
                 this._aperta(this._porId[id].nome, this._porId[id].fn);
@@ -249,10 +260,10 @@ class TelasTeste extends OnlineApp {
 
     /* A explicação e o desenho do item i nas peças da variante v; cada erro
      * fica anotado com a peça, para saber qual a interface aceita. */
-    _previa(v, i) {
+    _previa(v, i, r) {
         const e = estado(v);
         const it = ITENS[i];
-        const mostra = conteudo(v, i);
+        const mostra = conteudo(v, i, r);
         const escritas = [];
         const usada = pecaDoItem(v, i);
         if (v.troca && !v.preenche) {

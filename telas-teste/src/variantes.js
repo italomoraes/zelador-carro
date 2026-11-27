@@ -16,6 +16,16 @@ const ITENS = [
         nome: 'Mostrar em',
         tipo: 'lista',
         opcoes: ['Painel de instrumentos', 'HUD', 'Painel e HUD', 'Nenhum'],
+        /* A explicação e o desenho de cada opção, quando o foco está nela
+         * (a lista aberta manda o foco com o número da opção). */
+        opcoesDica: [
+            'O mapa do celular aparece no painel de instrumentos, no lugar do mapa da BMW, enquanto a navegação está ativa.',
+            'O mapa do celular aparece no HUD, a projeção no para-brisa. Ainda é experimental.',
+            'O mapa aparece nos dois lugares: no painel de instrumentos e no HUD.',
+            'O mapa do celular não aparece no painel nem no HUD; a BMW mostra o seu normalmente.'
+        ],
+        opcoesImagem: ['painel', 'hud', 'painel-hud', 'nenhum'],
+        cabecalho: 'Escolhe onde o mapa do celular aparece. Gire o botão para ver o que cada opção faz.',
         previa: 'texto',
         dica: 'Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD, nos dois ou em nenhum.',
         longa: 'Escolhe onde o mapa do celular aparece: no painel de instrumentos, no HUD (a projeção no para-brisa), nos dois ou em nenhum. No painel, o mapa ocupa o lugar do da BMW enquanto a navegação do celular está ativa; no HUD, aparece a seta da próxima manobra. Para voltar ao normal, escolha Nenhum.',
@@ -96,18 +106,16 @@ const PECAS = {
  *   dica: '' a dica (até 3 linhas); 'curta'; 'longa'. Nas variantes com
  *   menu, cada item usa a longa se a prévia dele é só texto. */
 const REGULAR = 'LT_State_Regular_ContentHidden';
-/* A 0.0.8 mostrou que o valueList (LT_ValueList_Regular) abre as opções no
- * lugar, com bolinhas, como no Attention Assist, mas fechado não mostra a
- * opção escolhida embaixo do nome; e que trocar o tipo da prévia deixa a
- * direita vazia por um instante mesmo com a peça nova preenchida antes. A
- * 0.0.9 fica com um tipo de prévia por menu e procura o valor embaixo do nome:
- *   valor: 'linhas' as opções levam também ItemSelectionText (o texto que a
- *     interface mostra da opção escolhida); 'app' o app escreve SelectedItem
- *     ao abrir e a cada escolha; 'ambos' os dois. */
+/* A 0.0.9 mostrou que o valor escolhido aparece embaixo do nome quando as
+ * opções levam ItemSelectionText (escrever SelectedItem pelo app não basta),
+ * e que a lista aberta manda o foco com o número da opção (parameterMap[2];
+ * 4294967295 é o nome). A 0.1.0 dá a cada opção a sua explicação e o seu
+ * desenho, com um tipo de prévia só por menu:
+ *   1: desenho e 3 linhas (1Graphic_1TextBottom) para tudo;
+ *   2: só texto (1Text) para tudo, com as explicações longas nos itens. */
 const VARIANTES = [
-    { n: 1, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'linhas', pecas: ['soTexto'], imagens: '', dica: 'longa' },
-    { n: 2, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'app', pecas: ['soTexto'], imagens: '', dica: 'longa' },
-    { n: 3, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'ambos', pecas: ['baixo'], imagens: 'baixo' }
+    { n: 1, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'linhas', porOpcao: true, pecas: ['baixo'], imagens: 'baixo' },
+    { n: 2, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'linhas', porOpcao: true, pecas: ['soTexto'], imagens: '', dica: 'longa' }
 ];
 
 /* A peça da prévia que mostra o item i na variante v (o índice em pecas). */
@@ -118,13 +126,20 @@ const pecaDoItem = (v, i) => {
     return ITENS[i].previa === 'texto' ? v.pecas.indexOf('soTexto') : v.pecas.indexOf('baixo');
 };
 
-/* O que a variante v mostra para o item i: o texto e o nome do desenho. */
-const conteudo = (v, i) => {
+/* O que a variante v mostra para o item i (e a opção r, se o foco está numa
+ * opção da lista; -1 é o nome da lista): o texto e o nome do desenho. */
+const conteudo = (v, i, r) => {
     const it = ITENS[i];
+    const desenho = (base) => (v.imagens === 'regua' ? 'regua' : (v.imagens ? `${base}-${v.imagens}` : base));
+    if (v.porOpcao && it.opcoesDica && r !== undefined) {
+        return r >= 0 && r < it.opcoesDica.length ?
+            { titulo: it.opcoes[r], texto: it.opcoesDica[r], imagem: desenho(it.opcoesImagem[r]) } :
+            { titulo: it.nome, texto: v.dica === 'longa' ? it.longa : it.cabecalho, imagem: desenho(it.imagem) };
+    }
     return {
         titulo: it.nome,
         texto: v.dica ? it[v.dica] : (v.troca && it.previa === 'texto' ? it.longa : it.dica),
-        imagem: v.imagens === 'regua' ? 'regua' : (v.imagens ? `${it.imagem}-${v.imagens}` : it.imagem)
+        imagem: desenho(it.imagem)
     };
 };
 
