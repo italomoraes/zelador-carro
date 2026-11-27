@@ -1,11 +1,11 @@
 {
   "name": "italo_telas_teste",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Teste de telas: experimenta, num app à parte, as telas da BMW com uma explicação à direita, para o menu do Mapas no painel. Remova depois do teste.",
   "private": false,
   "main": "javascript/runner.js",
   "oapAppSettings": {
-    "maxDiskUsage": 5242880,
+    "maxDiskUsage": 16777216,
     "cpuLimit": 20,
     "memoryThresholdKB": 102400,
     "priority": "PRIO_MEDIUM",

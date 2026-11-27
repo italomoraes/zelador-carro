@@ -124,8 +124,13 @@ let desenhos: [(String, (CGContext) -> Void)] = [
 ]
 
 for (nome, desenha) in desenhos {
-    png(nome, 300, 220, desenha)
-    for (sufixo, y0) in [("baixo", faixa), ("cima", CGFloat(0))] {
+    /* Só os quadros da animação vão no pacote: o app tem um limite de disco
+     * (maxDiskUsage no package.json; a 0.1.1 passou dos 5 MB e a central
+     * recusou com E_APP_MANAGER_MAX_DISK_USAGE_EXCEEDED). Os formatos de antes
+     * (pequeno, -baixo, -cima) saem com SO_ANIMACAO=0. */
+    let todos = ProcessInfo.processInfo.environment["SO_ANIMACAO"] == "0"
+    if todos { png(nome, 300, 220, desenha) }
+    for (sufixo, y0) in (todos ? [("baixo", faixa), ("cima", CGFloat(0))] : []) {
         png("\(nome)-\(sufixo)", W, H) { c in
             let livre = CGFloat(H) - faixa
             c.translateBy(x: (CGFloat(W) - 300 * escala) / 2, y: y0 + (livre - 220 * escala) / 2)
@@ -148,7 +153,7 @@ for (nome, desenha) in desenhos {
 
 /* A régua: borda, grade de 100 com os números e, a partir de baixo e de cima,
  * as faixas de 56 em que cabem as linhas de texto. */
-png("regua", W, H) { c in
+if ProcessInfo.processInfo.environment["SO_ANIMACAO"] == "0" { png("regua", W, H) { c in
     stroke(c, red, 6, CGPath(rect: CGRect(x: 3, y: 3, width: W - 6, height: H - 6), transform: nil))
     let g = CGMutablePath()
     for x in stride(from: 100, to: W, by: 100) { g.move(to: CGPoint(x: x, y: 0)); g.addLine(to: CGPoint(x: x, y: H)) }
@@ -167,4 +172,5 @@ png("regua", W, H) { c in
     for x in stride(from: 100, to: W, by: 100) { NSString(string: "\(x)").draw(at: NSPoint(x: x + 4, y: H / 2 + 6), withAttributes: attrs) }
     for y in stride(from: 100, to: H, by: 100) { NSString(string: "\(H - y)").draw(at: NSPoint(x: W / 2 + 6, y: y + 4), withAttributes: attrs) }
     NSString(string: "957×639").draw(at: NSPoint(x: 20, y: H - 50), withAttributes: attrs)
+}
 }

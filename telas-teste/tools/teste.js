@@ -127,7 +127,7 @@ const espera = () => new Promise((r) => setTimeout(r, 30));
     const registro = fs.readFileSync(path.join(tmp, 'registro.txt'), 'utf8');
     if (!registro.includes('telas prontas') || /FALTANDO|ERRO/.test(registro)) console.log(registro);
     confere(registro.includes('telas prontas') && !registro.includes('FALTANDO') && !registro.includes('ERRO'), 'o app achou tudo');
-    confere(fs.existsSync(path.join(tmp, 'painel.png')), 'imagens copiadas');
+    confere(PNGS.every((n) => fs.existsSync(path.join(tmp, n))), 'imagens copiadas');
     confere(registrados.length === PNGS.length && registrados.every((a) => a.startsWith(tmp)), 'imagens registradas na interface antes de usar');
     for (const v of VARIANTES) {
         const e = estado(v);

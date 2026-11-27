@@ -159,6 +159,12 @@ recebe imagens paradas, então `tools/desenhos.swift` desenha 8 quadros
 | 2 | 8 quadros, um a cada 80 ms |
 | 3 | 4 quadros, um a cada 160 ms |
 
+A 0.1.1 não instalou: com os desenhos de todos os formatos, o pacote passou
+do limite de disco que o próprio app declara (`maxDiskUsage` no
+`package.json`, que estava em 5 MB), e a central recusou com
+`E_APP_MANAGER_MAX_DISK_USAGE_EXCEEDED`. A **0.1.2** leva só os quadros da
+animação (5,4 MB) e declara 16 MB; o Mapas no painel e a loja declaram 25 MB.
+
 Os itens são os do Mapas no painel, com dicas de exemplo. Apertar um item
 não faz nada: o app só mostra.
 
