@@ -96,17 +96,18 @@ const PECAS = {
  *   dica: '' a dica (até 3 linhas); 'curta'; 'longa'. Nas variantes com
  *   menu, cada item usa a longa se a prévia dele é só texto. */
 const REGULAR = 'LT_State_Regular_ContentHidden';
-/* A 0.0.7 mostrou que o dropDownMenu (2Row ou 1Row) abre as opções numa
- * janela por cima, como no Mapas no painel; a lista que abre no lugar, com
- * bolinhas (Attention Assist), é o valueList (LT_ValueList_Regular: cabeçalho
- * LT_Button_ValueList_Header e opções LT_RadioButton_ValueList_Regular).
- * Trocar a peça da prévia pela propriedade Preview funciona, mas a direita
- * fica vazia ~0,6 s; Visible é recusado (INVALID_PROPERTYID). A 0.0.8:
- * a lista de opções no lugar e três jeitos de explicar. */
+/* A 0.0.8 mostrou que o valueList (LT_ValueList_Regular) abre as opções no
+ * lugar, com bolinhas, como no Attention Assist, mas fechado não mostra a
+ * opção escolhida embaixo do nome; e que trocar o tipo da prévia deixa a
+ * direita vazia por um instante mesmo com a peça nova preenchida antes. A
+ * 0.0.9 fica com um tipo de prévia por menu e procura o valor embaixo do nome:
+ *   valor: 'linhas' as opções levam também ItemSelectionText (o texto que a
+ *     interface mostra da opção escolhida); 'app' o app escreve SelectedItem
+ *     ao abrir e a cada escolha; 'ambos' os dois. */
 const VARIANTES = [
-    { n: 1, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', pecas: ['baixo'], imagens: 'baixo' },
-    { n: 2, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', pecas: ['soTexto'], imagens: '', dica: 'longa' },
-    { n: 3, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', pecas: ['soTexto', 'baixo'], troca: 'preview', preenche: true, imagens: 'baixo' }
+    { n: 1, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'linhas', pecas: ['soTexto'], imagens: '', dica: 'longa' },
+    { n: 2, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'app', pecas: ['soTexto'], imagens: '', dica: 'longa' },
+    { n: 3, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'ambos', pecas: ['baixo'], imagens: 'baixo' }
 ];
 
 /* A peça da prévia que mostra o item i na variante v (o índice em pecas). */

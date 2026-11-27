@@ -117,6 +117,20 @@ aceita para ele).
 | 2 | só texto, a explicação longa, para todos (`1Text`) |
 | 3 | troca de peça como na 0.0.7, mas com a peça nova preenchida antes da troca |
 
+**0.0.8 (26/11):** o `valueList` abre as opções no lugar, com bolinhas,
+mas fechado não mostra a opção escolhida embaixo do nome. Trocar o tipo da
+prévia deixa a direita vazia mesmo com a peça nova preenchida antes.
+
+**0.0.9:** um tipo de prévia por menu e o valor embaixo do nome:
+
+| Variante | Valor embaixo do nome | Prévia |
+|---|---|---|
+| 1 | as opções levam `ItemSelectionText` | só texto (longa) |
+| 2 | o app escreve `SelectedItem` ao abrir e a cada escolha | só texto (longa) |
+| 3 | os dois | desenho e 3 linhas |
+
+O app anota os eventos crus da lista, para ver se o foco nas opções chega.
+
 Os itens são os do Mapas no painel, com dicas de exemplo. Apertar um item
 não faz nada: o app só mostra.
 

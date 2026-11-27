@@ -36,7 +36,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="311" name="ContentPreview">
-            <component id="1120" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
+            <component id="1120" type="preview" widget="LT_PreviewTable_1Text"/>
         </layoutGroup>
         <layoutGroup id="123" name="List">
             <property id="3" value="1"/>
@@ -106,8 +106,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="313" name="ContentPreview">
-            <component id="1320" type="preview" widget="LT_PreviewTable_1Text"/>
-            <component id="1321" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
+            <component id="1320" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
         </layoutGroup>
         <layoutGroup id="127" name="List">
             <property id="3" value="1"/>

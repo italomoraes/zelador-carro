@@ -73,6 +73,8 @@ class TelasTeste extends OnlineApp {
         this._ultimo = {};
         this._imagens = {};
         this._estados = {};
+        this._iniciais = [];
+        this._listas = {};
         this._pecaAtual = {};
         this._visivel = false;
         this._saindo = null;
@@ -140,9 +142,24 @@ class TelasTeste extends OnlineApp {
             ITENS.forEach((it, i) => {
                 const nome = e.item(i).nome;
                 const c = this._achar(nome);
+                if (c && it.tipo === 'lista') {
+                    try {
+                        this._listas[Number(c.getId())] = `V${v.n}`;
+                    } catch (e) {
+                        /* sem id */
+                    }
+                }
                 if (c) {
                     this._liga(nome, () => anota(`variante ${v.n}: apertou "${it.nome}" (só mostra)`));
-                    c.on('change', (d) => anota(`variante ${v.n}: "${it.nome}" mudou: ${JSON.stringify(d)}`));
+                    c.on('change', (d) => {
+                        anota(`variante ${v.n}: "${it.nome}" mudou: ${JSON.stringify(d)}`);
+                        if (it.tipo === 'lista' && (v.valor === 'app' || v.valor === 'ambos')) {
+                            this._escreveValor(v, c, d && d.row);
+                        }
+                    });
+                    if (it.tipo === 'lista' && (v.valor === 'app' || v.valor === 'ambos')) {
+                        this._iniciais.push(() => this._escreveValor(v, c, 0));
+                    }
                     this._ligaFoco(nome, (foco) => {
                         if (foco) {
                             anota(`variante ${v.n}: foco em "${it.nome}"`);
@@ -158,6 +175,9 @@ class TelasTeste extends OnlineApp {
         });
         rhmi.on('userEvent', (ev) => {
             const id = Number(ev && ev.sourceId);
+            if (this._listas[id]) {
+                anota(`evento da lista ${this._listas[id]}: ${JSON.stringify(ev).slice(0, 300)}`);
+            }
             if (ev && ev.eventType === 'ACTION' && this._porId[id]) {
                 this._aperta(this._porId[id].nome, this._porId[id].fn);
             }
@@ -177,6 +197,7 @@ class TelasTeste extends OnlineApp {
             .then(() => this._registrarImagens())
             .then(() => {
                 VARIANTES.forEach((v) => this._previa(v, 0));
+                this._iniciais.forEach((fn) => fn());
                 anota('telas prontas');
             });
     }
@@ -286,6 +307,18 @@ class TelasTeste extends OnlineApp {
             Promise.resolve(this._comp[q.nome].setProperty('Visible', j === k ? 1 : 0, 'UInt'))
                 .catch((err) => anota(`variante ${v.n}: Visible de ${q.widget}: ${err && err.message}`))))
             .then(() => anota(`variante ${v.n}: visível -> ${p.widget}`));
+    }
+
+    /* Escreve a opção escolhida (SelectedItem) na lista, para ver se o nome
+     * passa a mostrar o valor embaixo, como no Attention Assist. */
+    _escreveValor(v, c, row) {
+        if (row === undefined || row === null) {
+            return;
+        }
+        Promise.resolve(c.setValue('SelectedItem', row, 'UInt'))
+            .then(() => this.rhmiApplication.flush && this.rhmiApplication.flush())
+            .then(() => anota(`variante ${v.n}: SelectedItem = ${row}`))
+            .catch((err) => anota(`variante ${v.n}: SelectedItem: ${err && err.message}`));
     }
 
     _abrir(nome) {

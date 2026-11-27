@@ -61,7 +61,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 1: menu (Regular) / 1Graphic_1TextBottom / desenho baixo",
+                "value": "Variante 1: menu (Regular) / 1Text / sem desenho / dica longa",
                 "type": "Text"
               }
             }
@@ -105,7 +105,7 @@
           "rows": [
             {
               "Text": {
-                "value": "Variante 3: menu (Regular, troca por preview) / 1Text + 1Graphic_1TextBottom / desenho baixo",
+                "value": "Variante 3: menu (Regular) / 1Graphic_1TextBottom / desenho baixo",
                 "type": "Text"
               }
             }
@@ -173,10 +173,18 @@
               "ItemText": {
                 "value": "Painel de instrumentos",
                 "type": "Text"
+              },
+              "ItemSelectionText": {
+                "value": "Painel de instrumentos",
+                "type": "Text"
               }
             },
             {
               "ItemText": {
+                "value": "HUD",
+                "type": "Text"
+              },
+              "ItemSelectionText": {
                 "value": "HUD",
                 "type": "Text"
               }
@@ -185,10 +193,18 @@
               "ItemText": {
                 "value": "Painel e HUD",
                 "type": "Text"
+              },
+              "ItemSelectionText": {
+                "value": "Painel e HUD",
+                "type": "Text"
               }
             },
             {
               "ItemText": {
+                "value": "Nenhum",
+                "type": "Text"
+              },
+              "ItemSelectionText": {
                 "value": "Nenhum",
                 "type": "Text"
               }
@@ -549,10 +565,18 @@
               "ItemText": {
                 "value": "Painel de instrumentos",
                 "type": "Text"
+              },
+              "ItemSelectionText": {
+                "value": "Painel de instrumentos",
+                "type": "Text"
               }
             },
             {
               "ItemText": {
+                "value": "HUD",
+                "type": "Text"
+              },
+              "ItemSelectionText": {
                 "value": "HUD",
                 "type": "Text"
               }
@@ -561,10 +585,18 @@
               "ItemText": {
                 "value": "Painel e HUD",
                 "type": "Text"
+              },
+              "ItemSelectionText": {
+                "value": "Painel e HUD",
+                "type": "Text"
               }
             },
             {
               "ItemText": {
+                "value": "Nenhum",
+                "type": "Text"
+              },
+              "ItemSelectionText": {
                 "value": "Nenhum",
                 "type": "Text"
               }
@@ -674,10 +706,6 @@
         "1320": {
           "type": "preview",
           "name": "telasV3Peca0"
-        },
-        "1321": {
-          "type": "preview",
-          "name": "telasV3Peca1"
         }
       }
     }

@@ -44,7 +44,8 @@ function estados() {
             if (v.menu && it.tipo === 'lista') {
                 return Object.assign(base, { tipo: /ValueList/.test(v.menu) ? 'valueList' : 'dropDownMenu', widget: v.menu,
                     cels: { HeaderText: { value: it.nome, type: 'Text' }, SelectedItem: { value: 0, type: 'UInt' } },
-                    linhas: it.opcoes.map((o) => ({ ItemText: { value: o, type: 'Text' } })) });
+                    linhas: it.opcoes.map((o) => Object.assign({ ItemText: { value: o, type: 'Text' } },
+                        v.valor === 'linhas' || v.valor === 'ambos' ? { ItemSelectionText: { value: o, type: 'Text' } } : {})) });
             }
             if (v.menu && it.tipo === 'marca') {
                 return Object.assign(base, { tipo: 'checkBox', widget: 'LT_CheckBox_1Row',
