@@ -21,6 +21,10 @@
                 <property id="2" value="1"/>
                 <property id="3" value="3"/>
             </component>
+            <component id="53" type="button" widget="LT_Button_1Row">
+                <property id="2" value="1"/>
+                <property id="3" value="3"/>
+            </component>
         </layoutGroup>
     </container>
     <container id="11" type="state" widget="LT_State_Regular_ContentHidden">
@@ -67,7 +71,7 @@
             </component>
         </layoutGroup>
         <layoutGroup id="312" name="ContentPreview">
-            <component id="1220" type="preview" widget="LT_PreviewTable_1Text"/>
+            <component id="1220" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
         </layoutGroup>
         <layoutGroup id="125" name="List">
             <property id="3" value="1"/>
@@ -88,6 +92,41 @@
                 <property id="3" value="3"/>
             </component>
             <component id="1205" type="button" widget="LT_Button_1Row">
+                <property id="2" value="1"/>
+                <property id="3" value="3"/>
+            </component>
+        </layoutGroup>
+    </container>
+    <container id="13" type="state" widget="LT_State_Regular_ContentHidden">
+        <property id="9" value="1"/>
+        <property id="4" value="1320"/>
+        <layoutGroup id="126" name="Titlebar">
+            <component id="1300" type="title">
+                <property id="2" value="1"/>
+            </component>
+        </layoutGroup>
+        <layoutGroup id="313" name="ContentPreview">
+            <component id="1320" type="preview" widget="LT_PreviewTable_1Graphic_1TextBottom"/>
+        </layoutGroup>
+        <layoutGroup id="127" name="List">
+            <property id="3" value="1"/>
+            <component id="1301" type="valueList" widget="LT_ValueList_Regular">
+                <property id="2" value="1"/>
+                <property id="3" value="3"/>
+            </component>
+            <component id="1302" type="checkBox" widget="LT_CheckBox_1Row">
+                <property id="2" value="1"/>
+                <property id="3" value="3"/>
+            </component>
+            <component id="1303" type="checkBox" widget="LT_CheckBox_1Row">
+                <property id="2" value="1"/>
+                <property id="3" value="3"/>
+            </component>
+            <component id="1304" type="checkBox" widget="LT_CheckBox_1Row">
+                <property id="2" value="1"/>
+                <property id="3" value="3"/>
+            </component>
+            <component id="1305" type="button" widget="LT_Button_1Row">
                 <property id="2" value="1"/>
                 <property id="3" value="3"/>
             </component>

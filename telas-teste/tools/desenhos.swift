@@ -4,6 +4,10 @@
 //   <nome>-baixo.png  957×639, a área inteira da prévia, com o desenho no alto
 //                     e o terço de baixo livre para o texto (1Graphic_1TextBottom)
 //   <nome>-cima.png   957×639, com o desenho embaixo e o alto livre (1Graphic_1Text2Row/3Row)
+//   <nome>-anim<k>.png 957×639, como o -baixo, em 8 quadros (k = 0 a 7) de uma
+//                     animação como a das configurações da BMW: o traço fino se
+//                     desenha, engrossa e acende, com um brilho vermelho atrás e
+//                     uma grade de pontos; o quadro 7 é a imagem parada
 //   regua.png         957×639, bordas, grade de 100 e as linhas de texto (56) marcadas
 // 957×639 é a prévia da LT_State_Regular_ContentHidden em unidades de 1920×720
 // (contentPreviewRegularW/H_ID7 da interface).
@@ -15,6 +19,9 @@ let out = CommandLine.arguments[1]
 let red = NSColor(calibratedRed: 0.86, green: 0.16, blue: 0.13, alpha: 1)
 let white = NSColor(calibratedWhite: 0.92, alpha: 1)
 let W = 957, H = 639
+/* Faixa livre para o texto: 3 linhas de 56 e a margem de cima (35), arredondada. */
+let faixa: CGFloat = 220
+let escala: CGFloat = 1.6
 
 func png(_ name: String, _ w: Int, _ h: Int, _ draw: (CGContext) -> Void) {
     let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: w, pixelsHigh: h, bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
@@ -26,7 +33,40 @@ func png(_ name: String, _ w: Int, _ h: Int, _ draw: (CGContext) -> Void) {
     NSGraphicsContext.restoreGraphicsState()
     try! rep.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: "\(out)/\(name).png"))
 }
-func stroke(_ c: CGContext, _ color: NSColor, _ wd: CGFloat, _ p: CGPath) { c.setStrokeColor(color.cgColor); c.setLineWidth(wd); c.addPath(p); c.strokePath() }
+/* O estilo do traço nos quadros da animação: quanto do traço aparece
+ * (revela, por tracejado), a espessura (fração) e o brilho (sombra vermelha). */
+var revela: CGFloat = 1, espessura: CGFloat = 1, brilho: CGFloat = 0
+func stroke(_ c: CGContext, _ color: NSColor, _ wd: CGFloat, _ p: CGPath) {
+    c.saveGState()
+    if brilho > 0 { c.setShadow(offset: .zero, blur: 16 * brilho, color: red.withAlphaComponent(0.9 * brilho).cgColor) }
+    if revela < 1 { c.setLineDash(phase: 0, lengths: [900 * revela, 100000]) }
+    c.setStrokeColor(color.cgColor); c.setLineWidth(wd * espessura); c.addPath(p); c.strokePath()
+    c.restoreGState()
+}
+/* O fundo dos quadros: um brilho vermelho redondo atrás do desenho e uma grade
+ * de pontos na parte de cima (a do texto fica livre), com a intensidade f. */
+func fundo(_ c: CGContext, _ centro: CGPoint, _ f: CGFloat) {
+    guard f > 0 else { return }
+    /* O brilho em anéis de cor chapada (não um degradê contínuo): o PNG fica
+     * pequeno, e na tela os degraus mal aparecem. */
+    let aneis = 14
+    for i in 0..<aneis {
+        let r = 330 * CGFloat(aneis - i) / CGFloat(aneis)
+        c.setFillColor(red.withAlphaComponent(0.28 * f / CGFloat(aneis) * 1.6).cgColor)
+        c.fillEllipse(in: CGRect(x: centro.x - r, y: centro.y - r, width: 2 * r, height: 2 * r))
+    }
+    c.setFillColor(NSColor(calibratedWhite: 0.7, alpha: 0.22 * f).cgColor)
+    for x in stride(from: 24, to: W, by: 28) {
+        for y in stride(from: Int(faixa) + 14, to: H, by: 28) {
+            c.fillEllipse(in: CGRect(x: CGFloat(x) - 1.5, y: CGFloat(y) - 1.5, width: 3, height: 3))
+        }
+    }
+}
+/* Os quadros: (revela, espessura, brilho, fundo). */
+let quadros: [(CGFloat, CGFloat, CGFloat, CGFloat)] = [
+    (0.12, 0.45, 0, 0), (0.3, 0.45, 0, 0.2), (0.5, 0.45, 0, 0.4), (0.75, 0.45, 0.2, 0.6),
+    (1, 0.55, 0.4, 0.8), (1, 0.75, 0.7, 1), (1, 0.9, 1, 1), (1, 1, 1, 1)
+]
 
 /* Os desenhos, em coordenadas de 300×220 (origem embaixo, à esquerda). */
 let desenhos: [(String, (CGContext) -> Void)] = [
@@ -83,9 +123,6 @@ let desenhos: [(String, (CGContext) -> Void)] = [
     })
 ]
 
-/* Faixa livre para o texto: 3 linhas de 56 e a margem de cima (35), arredondada. */
-let faixa: CGFloat = 220
-let escala: CGFloat = 1.6
 for (nome, desenha) in desenhos {
     png(nome, 300, 220, desenha)
     for (sufixo, y0) in [("baixo", faixa), ("cima", CGFloat(0))] {
@@ -96,6 +133,17 @@ for (nome, desenha) in desenhos {
             desenha(c)
         }
     }
+    for (k, q) in quadros.enumerated() {
+        (revela, espessura, brilho) = (q.0, q.1, q.2)
+        png("\(nome)-anim\(k)", W, H) { c in
+            let livre = CGFloat(H) - faixa
+            fundo(c, CGPoint(x: CGFloat(W) / 2, y: faixa + livre / 2), q.3)
+            c.translateBy(x: (CGFloat(W) - 300 * escala) / 2, y: faixa + (livre - 220 * escala) / 2)
+            c.scaleBy(x: escala, y: escala)
+            desenha(c)
+        }
+    }
+    (revela, espessura, brilho) = (1, 1, 0)
 }
 
 /* A régua: borda, grade de 100 com os números e, a partir de baixo e de cima,

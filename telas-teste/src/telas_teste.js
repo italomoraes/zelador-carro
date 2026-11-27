@@ -20,7 +20,7 @@ const fs = require('fs');
 const path = require('path');
 const OnlineApp = require('oap-sdk/src/core/OnlineApp.js');
 const logging = require('oap-sdk/src/logging/logging');
-const { ITENS, VARIANTES, ENTRADA, estado, botao, conteudo, pecaDoItem } = require('./variantes.js');
+const { ITENS, VARIANTES, ENTRADA, estado, botao, conteudo, pecaDoItem, quadros } = require('./variantes.js');
 
 const logger = logging.getSDKLogger();
 const PASTA = '/dev/shm/italo_telas_teste';
@@ -75,6 +75,7 @@ class TelasTeste extends OnlineApp {
         this._estados = {};
         this._iniciais = [];
         this._listas = {};
+        this._animacao = {};
         this._pecaAtual = {};
         this._visivel = false;
         this._saindo = null;
@@ -291,12 +292,35 @@ class TelasTeste extends OnlineApp {
             }
         });
         const flush = () => Promise.resolve(this.rhmiApplication.flush && this.rhmiApplication.flush());
+        this._anima(v, e.pecas[usada], mostra.imagem);
         return Promise.all(escritas)
             .then(flush)
             /* preenche: a peça nova recebe o conteúdo antes de a tela apontar
              * para ela, para ver se o vazio da troca diminui. */
             .then(() => (v.troca && v.preenche ? this._trocaPeca(v, usada).then(flush) : undefined))
             .catch((err) => anota(`variante ${v.n}: flush: ${err && err.message}`));
+    }
+
+    /* Os quadros seguintes da animação do desenho, um a cada v.animacao.ms;
+     * um foco novo na mesma variante cancela a animação anterior. */
+    _anima(v, p, imagem) {
+        const vez = (this._animacao[v.n] || 0) + 1;
+        this._animacao[v.n] = vez;
+        if (!v.animacao || !p || !p.desenho) {
+            return;
+        }
+        const c = this._comp[p.nome];
+        const lista = quadros(v, imagem).slice(1);
+        const proximo = (k) => {
+            if (this._animacao[v.n] !== vez || k >= lista.length || !c || !this._imagens[lista[k]]) {
+                return;
+            }
+            Promise.resolve(c.setValue(0, p.celDesenho || 'Graphic', this._imagens[lista[k]], 'ResourceId'))
+                .then(() => this.rhmiApplication.flush && this.rhmiApplication.flush())
+                .catch((err) => anota(`variante ${v.n}: quadro ${lista[k]}: ${err && err.message}`))
+                .then(() => setTimeout(() => proximo(k + 1), v.animacao.ms));
+        };
+        setTimeout(() => proximo(0), v.animacao.ms);
     }
 
     /* Mostra a peça k da prévia da variante v: pela propriedade Preview da

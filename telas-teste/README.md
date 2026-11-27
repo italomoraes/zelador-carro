@@ -144,6 +144,21 @@ desenho, com um tipo de prévia só no menu:
 | 1 | desenho e 3 linhas em tudo, opções incluídas |
 | 2 | só texto em tudo; a explicação longa nos itens e a curta nas opções |
 
+**0.1.0 (27/11):** ficou como queríamos: desenho e 3 linhas em tudo, uma
+explicação e um desenho por opção.
+
+**0.1.1:** a animação das configurações da BMW. Nos vídeos, o desenho novo
+entra em ~0,8 s: o traço fino se desenha aos pedaços, engrossa e acende,
+com um brilho vermelho atrás e uma grade de pontos. A peça de prévia só
+recebe imagens paradas, então `tools/desenhos.swift` desenha 8 quadros
+(`<nome>-anim0` a `7`) e o app troca o desenho quadro a quadro:
+
+| Variante | Desenho |
+|---|---|
+| 1 | parado (o último quadro, com o brilho) |
+| 2 | 8 quadros, um a cada 80 ms |
+| 3 | 4 quadros, um a cada 160 ms |
+
 Os itens são os do Mapas no painel, com dicas de exemplo. Apertar um item
 não faz nada: o app só mostra.
 

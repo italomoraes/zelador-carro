@@ -106,16 +106,19 @@ const PECAS = {
  *   dica: '' a dica (até 3 linhas); 'curta'; 'longa'. Nas variantes com
  *   menu, cada item usa a longa se a prévia dele é só texto. */
 const REGULAR = 'LT_State_Regular_ContentHidden';
-/* A 0.0.9 mostrou que o valor escolhido aparece embaixo do nome quando as
- * opções levam ItemSelectionText (escrever SelectedItem pelo app não basta),
- * e que a lista aberta manda o foco com o número da opção (parameterMap[2];
- * 4294967295 é o nome). A 0.1.0 dá a cada opção a sua explicação e o seu
- * desenho, com um tipo de prévia só por menu:
- *   1: desenho e 3 linhas (1Graphic_1TextBottom) para tudo;
- *   2: só texto (1Text) para tudo, com as explicações longas nos itens. */
+/* A 0.1.0 (desenho e 3 linhas em tudo, uma explicação por opção) ficou
+ * como queríamos. A 0.1.1 tenta a animação das configurações da BMW (o traço
+ * fino se desenha, engrossa e acende, com um brilho atrás): a peça de prévia
+ * só recebe imagens paradas, então o app troca os quadros da animação
+ * (tools/desenhos.swift: <nome>-anim0 a 7) um atrás do outro.
+ *   animacao: { quadros, ms } os quadros e o intervalo entre eles;
+ *   sem animacao, a imagem parada (o último quadro, imagens 'anim7'). */
 const VARIANTES = [
-    { n: 1, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'linhas', porOpcao: true, pecas: ['baixo'], imagens: 'baixo' },
-    { n: 2, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'linhas', porOpcao: true, pecas: ['soTexto'], imagens: '', dica: 'longa' }
+    { n: 1, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'linhas', porOpcao: true, pecas: ['baixo'], imagens: 'anim7' },
+    { n: 2, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'linhas', porOpcao: true, pecas: ['baixo'], imagens: 'anim7',
+        animacao: { quadros: [0, 1, 2, 3, 4, 5, 6, 7], ms: 80 } },
+    { n: 3, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'linhas', porOpcao: true, pecas: ['baixo'], imagens: 'anim7',
+        animacao: { quadros: [1, 3, 5, 7], ms: 160 } }
 ];
 
 /* A peça da prévia que mostra o item i na variante v (o índice em pecas). */
@@ -130,7 +133,8 @@ const pecaDoItem = (v, i) => {
  * opção da lista; -1 é o nome da lista): o texto e o nome do desenho. */
 const conteudo = (v, i, r) => {
     const it = ITENS[i];
-    const desenho = (base) => (v.imagens === 'regua' ? 'regua' : (v.imagens ? `${base}-${v.imagens}` : base));
+    const desenho = (base) => (v.imagens === 'regua' ? 'regua' :
+        (v.animacao ? `${base}-anim${v.animacao.quadros[0]}` : (v.imagens ? `${base}-${v.imagens}` : base)));
     if (v.porOpcao && it.opcoesDica && r !== undefined) {
         return r >= 0 && r < it.opcoesDica.length ?
             { titulo: it.opcoes[r], texto: it.opcoesDica[r], imagem: desenho(it.opcoesImagem[r]) } :
@@ -142,6 +146,9 @@ const conteudo = (v, i, r) => {
         imagem: desenho(it.imagem)
     };
 };
+
+/* Os quadros da animação de um desenho (o nome da imagem do primeiro quadro). */
+const quadros = (v, imagem) => (v.animacao ? v.animacao.quadros.map((k) => imagem.replace(/-anim\d+$/, `-anim${k}`)) : [imagem]);
 
 /* Ids: estados 1 (entrada) e 10 + n; grupos 100 + 2 * estado (título),
  * + 1 (lista) e 300 + estado (prévia); componentes 1000 + 100 * n + i
@@ -157,4 +164,4 @@ const estado = (v) => ({
 const botao = (v) => ({ id: 50 + v.n, nome: `telasAbre${v.n}` });
 const INFO = { id: 40, nome: 'telasInfo' };
 
-module.exports = { ITENS, PECAS, VARIANTES, ENTRADA, estado, botao, INFO, conteudo, pecaDoItem };
+module.exports = { ITENS, PECAS, VARIANTES, ENTRADA, estado, botao, INFO, conteudo, pecaDoItem, quadros };

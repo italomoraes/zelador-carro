@@ -13,7 +13,7 @@ const fs = require('fs');
 const Module = require('module');
 const os = require('os');
 const path = require('path');
-const { ITENS, VARIANTES, estado, botao, conteudo, pecaDoItem } = require('../src/variantes.js');
+const { ITENS, VARIANTES, estado, botao, conteudo, pecaDoItem, quadros } = require('../src/variantes.js');
 const gerar = require('./gerar.js');
 
 let ok = 0;
@@ -47,7 +47,7 @@ VARIANTES.forEach((v) => {
 });
 const app = JSON.parse(fs.readFileSync(path.join(PKG, 'rhmiData/application.json'), 'utf8')).application;
 confere(fs.existsSync(path.join(PKG, 'rhmiData/variantGroups/Common/images', app.entryPoints[0].icon)), 'ícone do ponto de entrada existe');
-VARIANTES.forEach((v) => ITENS.forEach((it, i) => [undefined, -1, 0, 1, 2, 3].forEach((r) => { const n = conteudo(v, i, r).imagem; confere(fs.existsSync(path.join(PKG, 'imagens', `${n}.png`)), `imagem ${n}.png`); })));
+VARIANTES.forEach((v) => ITENS.forEach((it, i) => [undefined, -1, 0, 1, 2, 3].forEach((r) => quadros(v, conteudo(v, i, r).imagem).forEach((n) => confere(fs.existsSync(path.join(PKG, 'imagens', `${n}.png`)), `imagem ${n}.png`)))));
 const PNGS = fs.readdirSync(path.join(PKG, 'imagens')).filter((n) => /\.png$/.test(n));
 
 /* As dicas cabem nas 3 linhas da prévia (a central corta o resto no meio da
@@ -189,6 +189,15 @@ const espera = () => new Promise((r) => setTimeout(r, 30));
             });
             const ultimo = chamadas.map((c) => !!c.flush).lastIndexOf(true);
             confere(ultimo === chamadas.length - 1, `variante ${v.n}, item ${i}: flush depois das escritas`);
+        }
+        if (v.animacao) {
+            /* a animação: depois do primeiro quadro, os outros chegam em ordem */
+            chamadas.length = 0;
+            rhmi.emit('userEvent', { eventType: 'FOCUS', sourceId: nomes[e.item(1).nome], parameterMap: { 0: true } });
+            await new Promise((r) => setTimeout(r, v.animacao.ms * (v.animacao.quadros.length + 2)));
+            const p = e.pecas[0];
+            const vistos = chamadas.filter((c) => c.nome === p.nome && c.cell === p.celDesenho).map((c) => path.basename(c.value, '.png'));
+            confere(JSON.stringify(vistos) === JSON.stringify(quadros(v, conteudo(v, 1).imagem)), `variante ${v.n}: os ${v.animacao.quadros.length} quadros da animação em ordem (${vistos.join(', ')})`);
         }
         chamadas.length = 0;
         comps[e.item(0).nome].emit('focus', { value: false });
