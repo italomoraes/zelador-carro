@@ -106,19 +106,14 @@ const PECAS = {
  *   dica: '' a dica (até 3 linhas); 'curta'; 'longa'. Nas variantes com
  *   menu, cada item usa a longa se a prévia dele é só texto. */
 const REGULAR = 'LT_State_Regular_ContentHidden';
-/* A 0.1.0 (desenho e 3 linhas em tudo, uma explicação por opção) ficou
- * como queríamos. A 0.1.1 tenta a animação das configurações da BMW (o traço
- * fino se desenha, engrossa e acende, com um brilho atrás): a peça de prévia
- * só recebe imagens paradas, então o app troca os quadros da animação
- * (tools/desenhos.swift: <nome>-anim0 a 7) um atrás do outro.
- *   animacao: { quadros, ms } os quadros e o intervalo entre eles;
- *   sem animacao, a imagem parada (o último quadro, imagens 'anim7'). */
+/* O formato escolhido (0.1.0 a 0.1.2): a lista no estilo dos menus da BMW
+ * (valueList com o valor embaixo do nome), desenho e 3 linhas na prévia de
+ * todos os itens, uma explicação e um desenho por opção, e os desenhos
+ * parados com o brilho (tools/desenhos.swift, <nome>-previa). A animação por
+ * quadros (0.1.1/0.1.2, campo animacao: { quadros, ms }) piscava: a peça
+ * esmaece cada imagem nova a partir do vazio. */
 const VARIANTES = [
-    { n: 1, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'linhas', porOpcao: true, pecas: ['baixo'], imagens: 'anim7' },
-    { n: 2, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'linhas', porOpcao: true, pecas: ['baixo'], imagens: 'anim7',
-        animacao: { quadros: [0, 1, 2, 3, 4, 5, 6, 7], ms: 80 } },
-    { n: 3, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'linhas', porOpcao: true, pecas: ['baixo'], imagens: 'anim7',
-        animacao: { quadros: [1, 3, 5, 7], ms: 160 } }
+    { n: 1, widget: REGULAR, previa: 'ContentPreview', menu: 'LT_ValueList_Regular', valor: 'linhas', porOpcao: true, pecas: ['baixo'], imagens: 'previa' }
 ];
 
 /* A peça da prévia que mostra o item i na variante v (o índice em pecas). */

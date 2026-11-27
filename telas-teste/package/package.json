@@ -1,6 +1,6 @@
 {
   "name": "italo_telas_teste",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Teste de telas: experimenta, num app à parte, as telas da BMW com uma explicação à direita, para o menu do Mapas no painel. Remova depois do teste.",
   "private": false,
   "main": "javascript/runner.js",

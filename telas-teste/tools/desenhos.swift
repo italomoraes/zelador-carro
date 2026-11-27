@@ -4,10 +4,12 @@
 //   <nome>-baixo.png  957×639, a área inteira da prévia, com o desenho no alto
 //                     e o terço de baixo livre para o texto (1Graphic_1TextBottom)
 //   <nome>-cima.png   957×639, com o desenho embaixo e o alto livre (1Graphic_1Text2Row/3Row)
-//   <nome>-anim<k>.png 957×639, como o -baixo, em 8 quadros (k = 0 a 7) de uma
-//                     animação como a das configurações da BMW: o traço fino se
-//                     desenha, engrossa e acende, com um brilho vermelho atrás e
-//                     uma grade de pontos; o quadro 7 é a imagem parada
+//   <nome>-previa.png 957×639, como o -baixo, no estilo das configurações da
+//                     BMW: traço aceso, brilho vermelho atrás e grade de pontos
+//                     (o que vai no pacote)
+//   <nome>-anim<k>.png com ANIMACAO=1, 8 quadros (k = 0 a 7) de uma animação:
+//                     o traço fino se desenha, engrossa e acende; o 7 é a prévia.
+//                     Trocar quadros pisca no carro (0.1.2), por isso não vai
 //   regua.png         957×639, bordas, grade de 100 e as linhas de texto (56) marcadas
 // 957×639 é a prévia da LT_State_Regular_ContentHidden em unidades de 1920×720
 // (contentPreviewRegularW/H_ID7 da interface).
@@ -138,9 +140,13 @@ for (nome, desenha) in desenhos {
             desenha(c)
         }
     }
-    for (k, q) in quadros.enumerated() {
+    /* A 0.1.2 mostrou que trocar os quadros pisca (a peça esmaece cada imagem
+     * nova a partir do vazio): fica só o último quadro, <nome>-previa.png. Os
+     * quadros da animação saem com ANIMACAO=1. */
+    let animacao = ProcessInfo.processInfo.environment["ANIMACAO"] == "1"
+    for (k, q) in quadros.enumerated() where animacao || k == quadros.count - 1 {
         (revela, espessura, brilho) = (q.0, q.1, q.2)
-        png("\(nome)-anim\(k)", W, H) { c in
+        png(animacao ? "\(nome)-anim\(k)" : "\(nome)-previa", W, H) { c in
             let livre = CGFloat(H) - faixa
             fundo(c, CGPoint(x: CGFloat(W) / 2, y: faixa + livre / 2), q.3)
             c.translateBy(x: (CGFloat(W) - 300 * escala) / 2, y: faixa + (livre - 220 * escala) / 2)

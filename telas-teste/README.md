@@ -165,6 +165,16 @@ do limite de disco que o próprio app declara (`maxDiskUsage` no
 `E_APP_MANAGER_MAX_DISK_USAGE_EXCEEDED`. A **0.1.2** leva só os quadros da
 animação (5,4 MB) e declara 16 MB; o Mapas no painel e a loja declaram 25 MB.
 
+**0.1.2 (27/11):** instalou, mas trocar os quadros pisca: a peça esmaece
+cada imagem nova a partir do vazio, e a animação parece um defeito. Os
+desenhos parados com o brilho (o último quadro) ficaram como queríamos.
+
+**0.1.3, o formato escolhido:** uma variante só. A lista no estilo dos
+menus da BMW (`valueList` com `ItemSelectionText`, o valor escolhido embaixo
+do nome), desenho e 3 linhas na prévia de todos os itens, uma explicação e
+um desenho por opção do "Mostrar em", e os desenhos parados com o brilho
+(`<nome>-previa.png`, 957×639, 1 MB ao todo).
+
 Os itens são os do Mapas no painel, com dicas de exemplo. Apertar um item
 não faz nada: o app só mostra.
 
